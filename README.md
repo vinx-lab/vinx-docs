@@ -27,7 +27,18 @@ Claude Code 这类 agent 写方案、做原型、跑测试出报告，产出都�
 
 ## 快速开始
 
-**1. 安装程序**（需要 Go 1.27 及以上；得到一个约 19 MB 的可执行文件，前端已内嵌，不需要其他运行时、数据库或 Docker）
+**1. 安装程序**（一个约 19 MB 的可执行文件，前端已内嵌，不需要其他运行时、数据库或 Docker）
+
+从 [Releases](https://github.com/vinx-lab/vinx-docs/releases/latest) 下载对应平台的压缩包，解压后把 `vinx-docs` 放进 `PATH`。以 Linux x86_64 为例：
+
+```bash
+curl -LO https://github.com/vinx-lab/vinx-docs/releases/latest/download/vinx-docs-linux-amd64.tar.gz
+tar xzf vinx-docs-linux-amd64.tar.gz && install -m 755 vinx-docs ~/.local/bin/
+```
+
+macOS 选 `darwin-arm64`（Apple 芯片）或 `darwin-amd64`（Intel），首次运行若被拦截，执行 `xattr -d com.apple.quarantine vinx-docs`；Windows 下载 `windows-amd64.zip`。各文件的校验值在 `SHA256SUMS.txt`。
+
+装了 Go 1.27 及以上的话，也可以直接：
 
 ```bash
 go install github.com/vinx-lab/vinx-docs/cmd/vinx-docs@latest   # 装到 $(go env GOPATH)/bin
