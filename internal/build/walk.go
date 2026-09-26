@@ -76,7 +76,7 @@ func walkRoot(prefix, root string, excludes []string, st *scanState) {
 				st.skipped = append(st.skipped, rel+"/:符号链接")
 			case strings.HasPrefix(name, "."):
 				st.skipped = append(st.skipped, rel+"/:隐藏路径")
-			case config.ForbiddenDirs[name]:
+			case config.IsForbiddenDir(name):
 				st.skipped = append(st.skipped, rel+"/:运行缓存或仓库目录")
 			case MatchesExcludeDir(rel, excludes):
 				st.skipped = append(st.skipped, rel+"/:exclude")

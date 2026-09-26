@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strings"
@@ -39,18 +41,52 @@ type Root struct {
 	Path   string
 }
 
-// AbsoluteNoSymlink 路径上任何一级是符号链接都拒绝。
+// AbsoluteNoSymlink 路径上任何一级是符号链接都拒绝，唯一例外见 systemLink。
 func AbsoluteNoSymlink(path, label string) (string, error) {
 	path = textutil.Absolute(path)
 	parts := textutil.Parts(path)
 	current := parts[0]
 	for _, component := range parts[1:] {
 		current = textutil.Join(current, component)
-		if textutil.IsSymlink(current) {
+		if textutil.IsSymlink(current) && !systemLink(current) {
 			return "", Errorf("%s不能经过符号链接: %s", label, path)
 		}
 	}
 	return path, nil
+}
+
+// darwinHost 与 systemLinks 是包级变量，测试里可以替换成临时的「假系统链接」。
+var (
+	darwinHost = runtime.GOOS == "darwin"
+	// systemLinks 是 macOS 自带、位于根目录第一段的符号链接及其唯一允许的链接内容。
+	systemLinks = map[string][]string{
+		"/tmp": {"/private/tmp", "private/tmp"},
+		"/var": {"/private/var", "private/var"},
+		"/etc": {"/private/etc", "private/etc"},
+	}
+)
+
+// systemLink 只在 macOS 上、且 path 恰好是 systemLinks 的键、链接内容恰好是表中的目标时为真；
+// 其他符号链接（包括目标被改过的 /tmp）一律为假。
+func systemLink(path string) bool {
+	if !darwinHost {
+		return false
+	}
+	// 调用方逐级拼出的路径以 //tmp 开头，先规范成 /tmp 再查表。
+	targets, ok := systemLinks[filepath.Clean(path)]
+	if !ok {
+		return false
+	}
+	target, err := os.Readlink(path)
+	if err != nil {
+		return false
+	}
+	for _, want := range targets {
+		if target == want {
+			return true
+		}
+	}
+	return false
 }
 
 // RejectDotdot 返回规范化后的相对 posix 路径。
@@ -223,6 +259,18 @@ func Locate(roots []Root, rel string) (Root, string, bool) {
 	return Root{}, "", false
 }
 
+// caseInsensitiveNames 为真时禁止目录名不区分大小写（NTFS 默认不区分，Node_Modules 也要拦住）。
+// 测试里可以临时改成 true。凭据文件名在各平台都先转小写再比较，不需要这个开关。
+var caseInsensitiveNames = runtime.GOOS == "windows"
+
+// IsForbiddenDir 报告目录名是否属于 ForbiddenDirs。
+func IsForbiddenDir(name string) bool {
+	if caseInsensitiveNames {
+		name = textutil.Lower(name)
+	}
+	return ForbiddenDirs[name]
+}
+
 // PolicyReason 强制安全规则（隐藏路径、缓存目录、凭据文件名）。
 func PolicyReason(rel, path string) string {
 	parts := textutil.Parts(rel)
@@ -232,7 +280,7 @@ func PolicyReason(rel, path string) string {
 		}
 	}
 	for _, part := range parts {
-		if ForbiddenDirs[part] {
+		if IsForbiddenDir(part) {
 			return "运行缓存或仓库目录"
 		}
 	}
