@@ -31,7 +31,7 @@
 
   <rect x="460" y="52" width="160" height="100" rx="12" fill="#ecfeff" stroke="#0e7490" stroke-width="2.2"/>
   <text x="540" y="92" text-anchor="middle" class="title" style="fill:#0e7490">Vinx Docs</text>
-  <text x="540" y="114" text-anchor="middle" class="sub">本机网站 :8000</text>
+  <text x="540" y="114" text-anchor="middle" class="sub">本地网站 :8000</text>
   <text x="540" y="131" text-anchor="middle" class="sub">不上传、不复制</text>
 
   <rect x="690" y="60" width="150" height="84" rx="12" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>

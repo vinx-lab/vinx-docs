@@ -1,6 +1,6 @@
 # Vinx Docs
 
-**一个给 coding agent 用的 skill：让 agent 把做好的东西交给你看，再把你的意见拿回去改。**
+**在本地查看和批注 agent 写的文档与原型，批注直接交给 agent 修改。**
 
 Claude Code 这类 agent 写方案、做原型、跑测试出报告，产出都留在项目目录里。装上 vinx-docs skill 后，agent 做完就把页面发布成一个短链接回给你；你在电脑或手机上打开，直接在页面上圈出要改的地方；批注送回 agent 会话，由它修改源文件、回复你改了什么。
 
@@ -13,7 +13,7 @@ Claude Code 这类 agent 写方案、做原型、跑测试出报告，产出都�
 | | 给谁用 | 是什么 |
 | --- | --- | --- |
 | **vinx-docs skill**（`skills/vinx-docs/SKILL.md`） | agent | 告诉 agent 什么时候发布、怎么发布、怎么领取和处理批注 |
-| **vinx-docs 程序** | agent 调命令，人用网页 | 一个在本机运行的小网站：阅读项目文档、打开页面短链接、写批注；agent 通过 `publish`、`comments`、`claim`、`reply`、`resolve`、`watch` 等命令和它交互 |
+| **vinx-docs 程序** | agent 调命令，人用网页 | 一个在本地运行的小网站：阅读项目文档、打开页面短链接、写批注；agent 通过 `publish`、`comments`、`claim`、`reply`、`resolve`、`watch` 等命令和它交互 |
 
 可以把它理解成「在线 artifact 页面」的本地版：不上传、不复制文件，源文件一改页面就更新，而且意见能直接回到 agent 手里。
 
