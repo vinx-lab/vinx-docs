@@ -14,7 +14,11 @@ func TestDarwinSystemLinkAncestors(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("Windows 上创建符号链接需要额外权限")
 	}
-	dir := t.TempDir()
+	// 先解析掉临时目录自身的符号链接（macOS 的 /var → /private/var），测试里只保留下面造的假链接。
+	dir, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	real := filepath.Join(dir, "private", "tmp")
 	if err := os.MkdirAll(filepath.Join(real, "docs"), 0o755); err != nil {
 		t.Fatal(err)
