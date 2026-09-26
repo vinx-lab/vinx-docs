@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -92,7 +93,8 @@ func TestReadAndSavePublishedDocWithHistory(t *testing.T) {
 	if !strings.Contains(tu.Read(t, file), "8094") {
 		t.Fatal("not saved")
 	}
-	if info, _ := os.Stat(file); info.Mode().Perm() != 0o640 {
+	// Windows 只有只读位，没有 Unix 权限位可保留。
+	if info, _ := os.Stat(file); runtime.GOOS != "windows" && info.Mode().Perm() != 0o640 {
 		t.Fatal("mode not preserved", info.Mode())
 	}
 	if leftovers, _ := filepath.Glob(filepath.Join(f.source, "guide", ".vinx-*")); len(leftovers) > 0 {

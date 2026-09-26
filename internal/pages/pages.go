@@ -525,7 +525,7 @@ func Publish(registry, entry, root string, extra []string, title string) (*ojson
 	var record *ojson.Object
 	for _, item := range records(value) {
 		candidate := item.(*ojson.Object)
-		if textutil.Join(Str(candidate, "root"), textutil.Parts(Str(candidate, "entry"))...) == entryPath {
+		if textutil.SamePath(textutil.Join(Str(candidate, "root"), textutil.Parts(Str(candidate, "entry"))...), entryPath) {
 			record = candidate
 			break
 		}

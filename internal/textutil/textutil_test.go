@@ -33,7 +33,8 @@ func TestRealpathResolvesLinksAndMissingTails(t *testing.T) {
 		filepath.Join(dir, "loop", "x"):                  filepath.Join(resolvedDir, "loop", "x"),
 	}
 	for in, want := range cases {
-		if got := Realpath(in); got != want {
+		// Windows 上结果统一用 / 分隔（C:/Users/...），期望值由 filepath 拼出，比较前换成 /。
+		if got := Realpath(in); got != filepath.ToSlash(want) {
 			t.Errorf("Realpath(%q) = %q, want %q", in, got, want)
 		}
 	}
@@ -45,5 +46,63 @@ func TestQuotePercentEncodesUTF8(t *testing.T) {
 	}
 	if got := Quote("data/a b.xlsx", ""); got != "data%2Fa%20b.xlsx" {
 		t.Error(got)
+	}
+}
+
+// Windows 的盘符、UNC 和反斜杠规则只涉及字符串处理，临时打开开关就能在任何平台上验证。
+func TestWindowsPathRules(t *testing.T) {
+	saved := windows
+	windows = true
+	defer func() { windows = saved }()
+	norms := map[string]string{
+		`C:\Users\x\docs\`:        "C:/Users/x/docs",
+		`c:/Users//x/./docs`:      "C:/Users/x/docs",
+		`C:`:                      "C:",
+		`C:rel\a`:                 "C:rel/a",
+		`\\server\share\a\b`:      "//server/share/a/b",
+		`\rooted\a`:               "/rooted/a",
+		`a\b/c`:                   "a/b/c",
+		`C:\a\..\b`:               "C:/a/../b",
+		`C:\`:                     "C:/",
+		`//server/share`:          "//server/share/",
+		`\\server`:                "/server",
+		`C:\Users\RUNNER~1\x.txt`: "C:/Users/RUNNER~1/x.txt",
+	}
+	for in, want := range norms {
+		if got := Norm(in); got != want {
+			t.Errorf("Norm(%q) = %q, want %q", in, got, want)
+		}
+	}
+	for in, want := range map[string]bool{`C:\a`: true, `C:/`: true, `\\s\share\x`: true, `\a`: false, `C:a`: false, `a`: false, `/a`: false} {
+		if IsAbs(in) != want {
+			t.Errorf("IsAbs(%q) != %v", in, want)
+		}
+	}
+	for in, want := range map[string]bool{`C:a`: true, `\a`: true, `/a`: true, `a/b`: false, `a:b`: true, `ab:c`: false} {
+		if HasRoot(in) != want {
+			t.Errorf("HasRoot(%q) != %v", in, want)
+		}
+	}
+	if !IsRoot(`C:\`) || !IsRoot(`\\s\share`) || IsRoot(`C:\a`) || IsRoot("a") {
+		t.Error("IsRoot")
+	}
+	if got := Join(`C:\base`, "a/b", `C:\other`, "c"); got != "C:/other/c" {
+		t.Error("Join resets on absolute part:", got)
+	}
+	if got := Join("C:/base", "/x", "C:y"); got != "C:/base/x/C:y" {
+		t.Error("Join keeps rooted and drive-relative parts inside:", got)
+	}
+	if Parent("C:/") != "C:/" || Parent("C:/a") != "C:/" || Name(`C:\a\b.md`) != "b.md" {
+		t.Error("Parent/Name")
+	}
+	if !IsWithin(`c:\users\X\docs\a.md`, "C:/Users/x/docs") || IsWithin("C:/Users/x/docs2", "C:/Users/x/docs") ||
+		IsWithin("D:/Users/x/docs/a", "C:/Users/x/docs") {
+		t.Error("IsWithin")
+	}
+	if got := RelativeTo(`C:\docs\guide\a.md`, "C:/docs"); got != "guide/a.md" {
+		t.Error("RelativeTo keeps / for published paths:", got)
+	}
+	if !SamePath(`C:\Users\X`, "c:/users/x") || SamePath("C:/a", "C:/a/b") {
+		t.Error("SamePath")
 	}
 }

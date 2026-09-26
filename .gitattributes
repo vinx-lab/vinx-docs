@@ -1,0 +1,3 @@
+# 检出时不做任何换行转换（Windows 上 core.autocrlf=true 会把 LF 换成 CRLF）：
+# 内嵌前端资源要和 assets/vendor/manifest.json 里的 SHA-256 逐字节一致，golden 测试数据同理。
+* -text

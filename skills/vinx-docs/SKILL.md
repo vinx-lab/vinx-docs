@@ -7,6 +7,8 @@ description: Vinx Docs：用户本机的文档与页面服务（默认 8000 端�
 
 Vinx Docs 是用户本机上的文档与页面服务。命令统一用 `vinx-docs`，在哪个目录执行都可以；`vinx-docs --help` 列出全部命令。
 
+**前提**：本机装有 `vinx-docs` 命令，服务在运行（`vinx-docs status` 查看）。找不到命令时，告诉用户按 https://github.com/vinx-lab/vinx-docs 的说明安装；服务没运行时，告诉用户执行 `vinx-docs start`。这两件事都由用户决定，不要自己安装或启动。
+
 用户常常不在这台机器前面，而是在别的设备（手机、另一台电脑）上打开链接。所以给出的链接**必须原样使用命令输出里的地址**（由配置项 `server.publicBase` 决定，没有配置时是 Tailscale 名或 localhost），不要自己改成 localhost 或别的主机名。
 
 ## 一、发布页面

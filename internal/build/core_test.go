@@ -557,7 +557,7 @@ func TestOneProjectCanPublishSeveralDirectories(t *testing.T) {
 		t.Fatal(sidebarText)
 	}
 	scope := readText(t, filepath.Join(output, "projects", "demo", "content", "__scope.md"))
-	if !strings.Contains(scope, mid) || !strings.Contains(scope, iot) {
+	if !strings.Contains(scope, filepath.ToSlash(mid)) || !strings.Contains(scope, filepath.ToSlash(iot)) {
 		t.Fatal(scope)
 	}
 }
@@ -626,7 +626,7 @@ func TestUpdateProjectCanAddDirectories(t *testing.T) {
 		t.Fatal("new root not published")
 	}
 	saved := config.Projects(loadJSON(t, cfg))[0].(*ojson.Object)
-	if saved.Has("docsPath") || ojson.Dumps(saved.Value("roots"), -1) != ojson.Dumps(rootsOf("", top, "mid-system", mid), -1) {
+	if saved.Has("docsPath") || ojson.Dumps(saved.Value("roots"), -1) != ojson.Dumps(rootsOf("", filepath.ToSlash(top), "mid-system", filepath.ToSlash(mid)), -1) {
 		t.Fatal(ojson.Dumps(saved, -1))
 	}
 }
@@ -637,7 +637,7 @@ func TestRegisterRejectsRootContainingGeneratedSite(t *testing.T) {
 	tool := filepath.Join(base, "tool")
 	mustWrite(t, filepath.Join(tool, "README.md"), "# tool")
 	err := RegisterProject(cfg, output, project(tool, "id", "tool"))
-	expectConfigError(t, err, tool, "docs/")
+	expectConfigError(t, err, filepath.ToSlash(tool), "docs/")
 }
 
 // ---- 按目录接入（页面上的「接入项目」）

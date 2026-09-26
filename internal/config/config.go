@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -126,9 +125,9 @@ func DataHome() (string, error) {
 	case "windows":
 		base = os.Getenv("LOCALAPPDATA")
 		if base == "" {
-			base = filepath.Join(home, "AppData", "Local")
+			base = textutil.Join(home, "AppData", "Local")
 		}
-		return filepath.Join(base, "vinx-docs"), nil
+		return textutil.Join(base, "vinx-docs"), nil
 	case "darwin":
 		base = textutil.Join(home, "Library", "Application Support")
 	default:

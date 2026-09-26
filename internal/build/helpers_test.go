@@ -27,7 +27,13 @@ func tempDir(t *testing.T) string {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { os.RemoveAll(dir) })
-	return dir
+	// macOS 的临时目录在 /var/folders 下，/var 是指向 /private/var 的符号链接；Windows 的临时目录
+	// 可能带 8.3 短名（RUNNER~1）。登记目录不允许经过符号链接，所以先解析成真实路径再交给测试。
+	resolved, err := filepath.EvalSymlinks(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return resolved
 }
 
 func mustWrite(t *testing.T, path, content string) {

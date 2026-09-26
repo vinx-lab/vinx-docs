@@ -664,7 +664,8 @@ func ScopeMatcher(paths files.Paths) Matcher {
 			}
 			if kind == "path" {
 				source := sourceOf(target)
-				if source != "" && (source == value || strings.HasPrefix(source, strings.TrimRight(value, "/")+"/")) {
+				// 按段比较：Windows 上 value 可能写成 C:\proj，源文件路径是 C:/proj/...。
+				if source != "" && textutil.IsAbs(value) && textutil.IsWithin(source, value) {
 					return true
 				}
 			}

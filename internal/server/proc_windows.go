@@ -26,3 +26,10 @@ func terminate(pid int) error {
 	}
 	return process.Kill()
 }
+
+// Winsock 的错误码和 Unix errno 数值不同，这里映射到同样的文案。
+func init() {
+	strerrors[syscall.Errno(10048)] = "Address already in use"          // WSAEADDRINUSE
+	strerrors[syscall.Errno(10013)] = "Permission denied"               // WSAEACCES
+	strerrors[syscall.Errno(10049)] = "Cannot assign requested address" // WSAEADDRNOTAVAIL
+}

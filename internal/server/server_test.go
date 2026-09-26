@@ -23,6 +23,7 @@ import (
 	"github.com/vinx-lab/vinx-docs/internal/config"
 	"github.com/vinx-lab/vinx-docs/internal/pages"
 	"github.com/vinx-lab/vinx-docs/internal/server"
+	"github.com/vinx-lab/vinx-docs/internal/testutil"
 )
 
 const childEnv = "VINX_SERVER_TEST_CHILD"
@@ -54,7 +55,7 @@ func writeFile(t *testing.T, path, text string) {
 // makeTool 家目录自带最小的 web/ 和 vendor/。
 func makeTool(t *testing.T) string {
 	t.Helper()
-	tool := filepath.Join(t.TempDir(), "tool")
+	tool := filepath.Join(testutil.TempDir(t), "tool")
 	writeFile(t, filepath.Join(tool, "web", "index.html"), "<html>index</html>")
 	writeFile(t, filepath.Join(tool, "web", "project.html"), "<html>project</html>")
 	if err := os.MkdirAll(filepath.Join(tool, "web", "assets"), 0o755); err != nil {
@@ -187,7 +188,7 @@ func (f *fixture) get(path string, headers map[string]string) response {
 func TestSameOriginHostCanRegisterAndRefresh(t *testing.T) {
 	for _, host := range []string{"192.168.1.2:8000", "docs.local:8000", "127.0.0.1:8000"} {
 		f := startServer(t, makeTool(t))
-		source := setupSource(t, t.TempDir())
+		source := setupSource(t, testutil.TempDir(t))
 		r := f.post("/api/projects", map[string]any{"docsPath": source}, map[string]string{"Origin": "http://" + host, "Host": host})
 		if r.status != 200 || r.json(t)["projectCount"] != float64(1) || r.headers.Get("Access-Control-Allow-Origin") != "" {
 			t.Fatal(host, r.status, string(r.body))
@@ -203,10 +204,10 @@ func TestSameOriginHostCanRegisterAndRefresh(t *testing.T) {
 
 func TestRegisterAndRefreshRealDocuments(t *testing.T) {
 	f := startServer(t, makeTool(t))
-	source := setupSource(t, t.TempDir())
+	source := setupSource(t, testutil.TempDir(t))
 	r := f.post("/api/projects", map[string]any{"docsPath": source}, nil)
 	result := r.json(t)
-	if r.status != 200 || result["fileCount"] != float64(2) || strings.Contains(string(r.body), source) {
+	if r.status != 200 || result["fileCount"] != float64(2) || strings.Contains(string(r.body), filepath.ToSlash(source)) {
 		t.Fatal(r.status, string(r.body))
 	}
 	if !r.close {
@@ -322,14 +323,14 @@ func TestBadPathAndFailedRefreshAreReported(t *testing.T) {
 
 func TestConfigAndSettingsEndpointsDriveTheAdminPage(t *testing.T) {
 	f := startServer(t, makeTool(t))
-	source := setupSource(t, t.TempDir())
+	source := setupSource(t, testutil.TempDir(t))
 	if r := f.post("/api/projects", map[string]any{"docsPath": source}, nil); r.status != 200 {
 		t.Fatal(string(r.body))
 	}
 	cfg := f.get("/api/config", nil).json(t)
 	project := cfg["projects"].([]any)[0].(map[string]any)
 	roots := project["roots"].([]any)
-	if roots[0].(map[string]any)["path"] != source || project["fileCount"].(float64) < 1 || cfg["settings"].(map[string]any)["autoSync"] != true {
+	if roots[0].(map[string]any)["path"] != filepath.ToSlash(source) || project["fileCount"].(float64) < 1 || cfg["settings"].(map[string]any)["autoSync"] != true {
 		t.Fatal(cfg)
 	}
 	// 接入后自动同步已经启动。
@@ -360,7 +361,7 @@ func TestConfigAndSettingsEndpointsDriveTheAdminPage(t *testing.T) {
 
 func TestConfigSurvivesAVanishedRoot(t *testing.T) {
 	f := startServer(t, makeTool(t))
-	base := t.TempDir()
+	base := testutil.TempDir(t)
 	kept := setupSource(t, filepath.Join(base, "kept"))
 	gone := setupSource(t, filepath.Join(base, "gone"))
 	for _, source := range []string{kept, gone} {
@@ -373,6 +374,8 @@ func TestConfigSurvivesAVanishedRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg := f.get("/api/config", nil).json(t)
+	// 接口返回的路径统一用 / 分隔（Windows 上是 C:/...），这里也换成 / 再查。
+	kept, gone = filepath.ToSlash(kept), filepath.ToSlash(gone)
 	byPath := map[string]map[string]any{}
 	for _, item := range cfg["projects"].([]any) {
 		project := item.(map[string]any)
@@ -418,7 +421,7 @@ func TestWriteEndpointsRejectUnknownFieldsAndBadOrigin(t *testing.T) {
 
 func TestStaticSiteHeadersMatchTheOldNginxRules(t *testing.T) {
 	f := startServer(t, makeTool(t))
-	source := setupSource(t, t.TempDir())
+	source := setupSource(t, testutil.TempDir(t))
 	writeFile(t, filepath.Join(source, "guide", "page.html"), "<script>alert(1)</script>")
 	writeFile(t, filepath.Join(source, "guide", "data.json"), "{}")
 	if r := f.post("/api/projects", map[string]any{"docsPath": source}, nil); r.status != 200 {
@@ -483,7 +486,7 @@ func TestStaticSiteHeadersMatchTheOldNginxRules(t *testing.T) {
 
 func TestEmbeddedAssetsAreServedWhenHomeHasNoWeb(t *testing.T) {
 	assets.Install()
-	home := filepath.Join(t.TempDir(), "home")
+	home := filepath.Join(testutil.TempDir(t), "home")
 	f := startServer(t, home)
 	if r := f.post("/api/refresh", nil, nil); r.status != 200 {
 		t.Fatal(r.status, string(r.body))
@@ -500,7 +503,7 @@ func TestEmbeddedAssetsAreServedWhenHomeHasNoWeb(t *testing.T) {
 
 func TestArtifactShortLinks(t *testing.T) {
 	f := startServer(t, makeTool(t))
-	page := filepath.Join(t.TempDir(), "page")
+	page := filepath.Join(testutil.TempDir(t), "page")
 	writeFile(t, filepath.Join(page, "index.html"), `<html><head><title>原型</title><link rel="stylesheet" href="app.css"></head><body>hi</body></html>`)
 	writeFile(t, filepath.Join(page, "app.css"), "body{}")
 	writeFile(t, filepath.Join(page, "data.bin"), "\x00")
@@ -591,7 +594,7 @@ func TestCreateReportsBusyPort(t *testing.T) {
 	defer listener.Close()
 	port := listener.Addr().(*net.TCPAddr).Port
 	host := "127.0.0.1"
-	_, err := server.Create(t.TempDir(), &host, &port)
+	_, err := server.Create(testutil.TempDir(t), &host, &port)
 	want := fmt.Sprintf("无法监听 127.0.0.1:%d：Address already in use（端口可能已被占用，可在配置的 server.port 里换一个）", port)
 	if err == nil || err.Error() != want || !config.IsConfigError(err) {
 		t.Fatal(err)

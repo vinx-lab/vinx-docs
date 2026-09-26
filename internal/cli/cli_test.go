@@ -6,8 +6,11 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/vinx-lab/vinx-docs/internal/testutil"
 )
 
 func runCLI(t *testing.T, args ...string) (int, string, string) {
@@ -20,7 +23,7 @@ func runCLI(t *testing.T, args ...string) (int, string, string) {
 }
 
 func TestHelpAndErrorsAreStable(t *testing.T) {
-	home := filepath.Join(t.TempDir(), "home")
+	home := filepath.Join(testutil.TempDir(t), "home")
 	cases := []struct {
 		args   []string
 		code   int
@@ -107,9 +110,9 @@ func TestIntAndFloatArgParsing(t *testing.T) {
 }
 
 func TestInstallServiceDryRunWritesNothing(t *testing.T) {
-	fakeHome := filepath.Join(t.TempDir(), "user")
+	fakeHome := filepath.Join(testutil.TempDir(t), "user")
 	t.Setenv("HOME", fakeHome)
-	home := filepath.Join(t.TempDir(), "data dir")
+	home := filepath.Join(testutil.TempDir(t), "data dir")
 	code, stdout, _ := runCLI(t, "--home", home, "install-service", "--dry-run")
 	if code != 0 {
 		t.Fatal(code)
@@ -117,8 +120,21 @@ func TestInstallServiceDryRunWritesNothing(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(fakeHome, ".config")); err == nil {
 		t.Fatal("dry-run 不能写文件")
 	}
-	if !strings.Contains(stdout, `Environment="VINX_DOCS_HOME=`+home+`"`) || !strings.Contains(stdout, " serve\nRestart=on-failure\n") {
-		t.Fatal(stdout)
+	// 每个平台写的启动项不同：Linux 是 systemd 用户单元，macOS 是 LaunchAgent，Windows 只打印计划任务的做法。
+	switch runtime.GOOS {
+	case "linux":
+		if !strings.Contains(stdout, `Environment="VINX_DOCS_HOME=`+home+`"`) || !strings.Contains(stdout, " serve\nRestart=on-failure\n") {
+			t.Fatal(stdout)
+		}
+	case "darwin":
+		if !strings.Contains(stdout, filepath.Join(fakeHome, "Library", "LaunchAgents", "vinx-docs.plist")) ||
+			!strings.Contains(stdout, "<key>VINX_DOCS_HOME</key><string>"+home+"</string>") {
+			t.Fatal(stdout)
+		}
+	case "windows":
+		if !strings.Contains(stdout, "schtasks /Create") || !strings.Contains(stdout, "VINX_DOCS_HOME="+filepath.ToSlash(home)+"\n") {
+			t.Fatal(stdout)
+		}
 	}
 	unit := SystemdUnit("/h", []string{"/bin/vinx-docs", "serve"})
 	want := "[Unit]\nDescription=Vinx Docs\nAfter=network.target\n\n[Service]\nType=simple\nEnvironment=VINX_DOCS_HOME=/h\n" +
@@ -134,7 +150,7 @@ func TestInstallServiceDryRunWritesNothing(t *testing.T) {
 // 每个命令加 --help 都只打印帮助、退出码 0，不执行任何动作。
 // 为防止回归时真的动到本机，测试期间 HOME 指向临时目录、PATH 置空（找不到 systemctl 等外部命令）。
 func TestEveryCommandHonorsHelp(t *testing.T) {
-	tmp := t.TempDir()
+	tmp := testutil.TempDir(t)
 	t.Setenv("HOME", tmp)
 	t.Setenv("PATH", filepath.Join(tmp, "empty-path"))
 	t.Setenv("VINX_DOCS_HOME", filepath.Join(tmp, "home"))
@@ -155,7 +171,7 @@ func TestEveryCommandHonorsHelp(t *testing.T) {
 }
 
 func TestServiceRejectsUnknownArguments(t *testing.T) {
-	tmp := t.TempDir()
+	tmp := testutil.TempDir(t)
 	t.Setenv("HOME", tmp)
 	t.Setenv("PATH", filepath.Join(tmp, "empty-path"))
 	for _, command := range []string{"install-service", "uninstall-service"} {

@@ -1,14 +1,21 @@
 # Vinx Docs
 
-让 agent 的产出在一个网页里被看见、被批注、被改好。
+**一个给 coding agent 用的 skill：让 agent 把做好的东西交给你看，再把你的意见拿回去改。**
 
-你让 Claude Code 这类 agent 写方案、做原型、跑测试出报告，它们的产出散落在各个项目目录里。Vinx Docs 在你自己的电脑上运行一个小网站：项目文档按项目浏览，agent 做的页面一条命令拿到短链接，你在手机或另一台电脑上打开、在页面上直接写意见，意见会送回正在工作的 agent 会话，由它接着改。
+Claude Code 这类 agent 写方案、做原型、跑测试出报告，产出都留在项目目录里。装上 vinx-docs skill 后，agent 做完就把页面发布成一个短链接回给你；你在电脑或手机上打开，直接在页面上圈出要改的地方；批注送回 agent 会话，由它修改源文件、回复你改了什么。
 
 ![工作流程：agent 写文件 → Vinx Docs 收录和发布 → 你阅读并批注 → 交回 agent 修改](docs/images/overview.png)
 
-![首页：项目文档与页面](docs/images/home.png)
+*English: a skill for coding agents, backed by a small local server. Agents publish the pages and docs they produce as short links; you read and annotate them in the browser; the notes go back to the agent session to act on. Nothing leaves your machine. Single Go binary; the UI is in Chinese.*
 
-*English: a self-hosted review desk for coding-agent output — read project docs, open agent-built pages via short links, annotate them, and hand the notes back to the agent. Nothing leaves your machine. Single Go binary; the UI is in Chinese.*
+## 它由两部分组成
+
+| | 给谁用 | 是什么 |
+| --- | --- | --- |
+| **vinx-docs skill**（`skills/vinx-docs/SKILL.md`） | agent | 告诉 agent 什么时候发布、怎么发布、怎么领取和处理批注 |
+| **vinx-docs 程序** | agent 调命令，人用网页 | 一个在本机运行的小网站：阅读项目文档、打开页面短链接、写批注；agent 通过 `publish`、`comments`、`claim`、`reply`、`resolve`、`watch` 等命令和它交互 |
+
+可以把它理解成「在线 artifact 页面」的本地版：不上传、不复制文件，源文件一改页面就更新，而且意见能直接回到 agent 手里。
 
 ## 为什么做这个
 
@@ -18,7 +25,48 @@
 - 原型、报告、截图集是本地 HTML 文件，人不在电脑前（只用 SSH 指挥 agent）时根本打不开；
 - 看完有意见，还得把「第几段哪句话」「页面上哪个按钮」描述一遍，再粘贴回终端。
 
-在线的 artifact 托管能解决「看」，但内容要上传，改一次就得重新发一次。Vinx Docs 在本机做同一件事：**不上传、不复制文件，源文件一改页面就更新，意见直接回到 agent 手里。**
+## 快速开始
+
+**1. 安装程序**（需要 Go 1.27 及以上；得到一个约 19 MB 的可执行文件，前端已内嵌，不需要其他运行时、数据库或 Docker）
+
+```bash
+go install github.com/vinx-lab/vinx-docs/cmd/vinx-docs@latest   # 装到 $(go env GOPATH)/bin
+```
+
+**2. 启动服务**
+
+```bash
+vinx-docs start     # 后台运行，默认监听 8000 端口
+```
+
+浏览器打开 `http://localhost:8000/`，点「接入项目」，填一个项目的 `docs/` 目录路径（可选，只看 agent 发布的页面可以跳过）。
+
+**3. 安装 skill**（Claude Code）
+
+```bash
+git clone https://github.com/vinx-lab/vinx-docs.git
+ln -s "$PWD/vinx-docs/skills/vinx-docs" ~/.claude/skills/vinx-docs
+```
+
+然后对 agent 说：
+
+> 做一个订单看板的原型页面，做完发布给我看。
+
+agent 会回你一行 `已发布「订单看板」：http://…/a/xxxxxx/`。打开它，在页面上点选元素写批注，点「交给 agent」。
+
+## 装上 skill 之后，agent 会做什么
+
+| 什么时候 | agent 做什么 |
+| --- | --- |
+| 做完一个要给人看的页面（原型、报告、截图集、示意图） | `vinx-docs publish` 发布，检查输出里的提示，只回你一行短链接 |
+| 发布之后 | 用 `Monitor` 挂上 `vinx-docs watch`，等你点「交给 agent」 |
+| 你点了「交给 agent」 | 会话被唤醒：`claim` 领取 → 改源文件 → `reply` 回复 → `resolve` 附说明解决；页面自动刷新 |
+| 你说「看看批注」「处理批注」 | 列出积压的批注，逐条处理 |
+| 本来要回你一个本地文件路径时 | 改成发布成链接，方便你在别的设备上打开 |
+
+skill 还约束了几件事：链接必须原样用命令输出的地址；页面不能引用外部 CDN；批注是人写的意见，不能当作越过项目约定的指令；取消发布只在你要求时做。完整规则见 [SKILL.md](skills/vinx-docs/SKILL.md)。
+
+Codex 可以用 `vinx-docs subscribe` 登记接收批注（尚未实测）。其他 agent 只要能执行命令，也可以直接用这些命令。
 
 ## 一个完整的例子
 
@@ -38,7 +86,9 @@
 
 整个过程你不用碰文件，agent 也不用猜你说的是哪一处。
 
-## 功能
+## 网页端功能
+
+![首页：项目文档与页面](docs/images/home.png)
 
 - **项目文档**：登记项目的文档目录后整个收录，文件一变自动同步。每个项目有独立的阅读页（侧栏、目录、搜索），首页可以跨项目搜索。支持 Markdown、Mermaid 图表、代码块一键复制，表格文件可在线预览。
 - **页面短链接**：agent 做的 HTML 页面一条命令发布，引用的 css、js、图片自动收进清单。源文件就地读取，改完约 2 秒自动刷新。
@@ -48,33 +98,15 @@
 
 它**不做**这些：账号和权限、多人协同编辑、云同步、替 agent 管理任务。它是给一个人（或信得过的小团队）在自己的网络里用的工具。
 
-## 安装
+## 部署
 
-需要 Go 1.27 及以上。得到的是一个约 19 MB 的可执行文件，前端已经编译在里面，不需要其他运行时、数据库或 Docker。
-
-```bash
-go install github.com/vinx-lab/vinx-docs/cmd/vinx-docs@latest   # 装到 $(go env GOPATH)/bin
-```
-
-或者从源码构建：
+**从源码构建**：
 
 ```bash
 git clone https://github.com/vinx-lab/vinx-docs.git && cd vinx-docs
-./scripts/build.sh                          # 输出 dist/vinx-docs
-install -m 755 dist/vinx-docs ~/.local/bin/ # 放进 PATH 里的任意目录
+./scripts/build.sh                          # 输出 dist/vinx-docs；加 all 交叉编译各平台
+install -m 755 dist/vinx-docs ~/.local/bin/
 ```
-
-`./scripts/build.sh all` 交叉编译 Linux、macOS、Windows 各版本。
-
-## 开始使用
-
-```bash
-vinx-docs start
-```
-
-1. 浏览器打开 `http://localhost:8000/`，点「接入项目」，填一个项目的 `docs/` 目录路径。
-2. 让 agent 发布一个页面试试：`vinx-docs publish <某个页面>/index.html --title "试一下"`。
-3. 在阅读页或页面上写一条批注，到 `/comments.html` 查看。
 
 **在其他设备上看**：服务默认监听所有网卡的 8000 端口，同一网络里的手机、电脑用 `http://<这台机器的地址>:8000/` 访问。想让 agent 给出的链接直接用这个地址，在家目录的 `config/projects.json` 里设置 `server.publicBase`，例如 `http://my-host:8000`。
 
@@ -86,27 +118,9 @@ vinx-docs start
 
 > **安全提醒**：没有登录。能访问这个端口的设备都能阅读全部收录内容、写批注，也能通过页面编辑器改写源文件。只在可信的网络里使用，不要暴露到公网。
 
-## 让 agent 用起来
+## 配合其他 skill
 
-### 安装 vinx-docs skill
-
-仓库里的 `skills/vinx-docs/SKILL.md` 告诉 agent 什么时候发布、怎么处理批注。Claude Code 用户链接到 skill 目录即可：
-
-```bash
-ln -s "$PWD/skills/vinx-docs" ~/.claude/skills/vinx-docs
-```
-
-装好后，agent 会：
-
-- 做完要给人看的页面时自动发布，只回你一行短链接；
-- 挂上 `vinx-docs watch` 监听，你点「交给 agent」时被唤醒；
-- 按「领取 → 改源文件 → 回复 → 解决（附说明）」处理批注。
-
-你也可以直接说「看看批注」「处理批注」让它清理积压。Codex 可以用 `vinx-docs subscribe` 登记接收（尚未实测）。
-
-批注是人写的内容，agent 应当把它当作意见，而不是可以越过项目约定的指令。
-
-### 配合设计 skill：ui-ux-pro-max
+### 设计 skill：ui-ux-pro-max
 
 做原型、报告页、仪表盘时，可以同时装一个设计 skill，例如 [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)（MIT）。它负责风格、配色、字体搭配、布局和可访问性，Vinx Docs 负责发布和收集意见，两者配合就是一个本地的「设计 → 审阅 → 修改」循环：
 
@@ -119,6 +133,7 @@ ln -s "$PWD/skills/vinx-docs" ~/.claude/skills/vinx-docs
 作者的环境，供参考：
 
 - **开发机**是 Windows 上的 WSL2（Ubuntu，开启 systemd），Vinx Docs 作为 systemd 用户服务常驻。
+- **agent** 以 Claude Code 为主，装了 vinx-docs 和 ui-ux-pro-max 两个 skill。
 - **人大多不在开发机前**：用 SSH 连上去，在 tmux 里运行 Claude Code 下指令；审阅用手机或另一台电脑打开链接。
 - **一个需求的节奏**：先把需求和方案写成仓库里的 Markdown（`docs/specs/`），重要的设计决定写进 `docs/architecture-decisions/`；agent 实现后，把说明写进 `docs/`、把原型和报告发布成短链接；我在 Vinx Docs 里看、批注；agent 逐条处理。以仓库文件为准，issue 只放摘要和链接。
 - **私人信息不进仓库**：本机路径、主机名、端口约定写在 `CLAUDE.local.md`（Claude Code 会自动读取，但不提交）；提交前由本地钩子扫描敏感词。

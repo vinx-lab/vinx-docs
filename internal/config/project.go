@@ -1,6 +1,7 @@
 package config
 
 import (
+	"runtime"
 	"sort"
 	"strings"
 
@@ -58,15 +59,25 @@ func RejectDotdot(value any, label string) (string, error) {
 	if !ok || text == "" || strings.Contains(text, "\\") {
 		return "", Errorf("%s必须是非空相对路径", label)
 	}
-	if textutil.IsAbs(text) {
+	// HasRoot 比 IsAbs 严：Windows 上 C:x、/x 不算绝对路径，但拼到目录后面会离开该目录。
+	if textutil.IsAbs(text) || textutil.HasRoot(text) {
 		return "", Errorf("%s不能包含绝对路径或越界组件", label)
 	}
 	for _, part := range textutil.Parts(text) {
-		if part == ".." {
+		if part == ".." || windowsAlias(part) {
 			return "", Errorf("%s不能包含绝对路径或越界组件", label)
 		}
 	}
 	return textutil.Norm(text), nil
+}
+
+// windowsAlias 报告 Windows 上会被改写成别的名字的路径段：含 :（备用数据流、盘符），
+// 或以 . 或空格结尾（Win32 会去掉，id_rsa. 实际打开 id_rsa，绕过文件名规则）。其他平台总是 false。
+func windowsAlias(part string) bool {
+	if runtime.GOOS != "windows" {
+		return false
+	}
+	return strings.Contains(part, ":") || strings.HasSuffix(part, ".") || strings.HasSuffix(part, " ")
 }
 
 // CheckedDir 校验一个文档目录：必须是绝对路径、存在、是目录，且路径上没有符号链接。
@@ -83,7 +94,7 @@ func CheckedDir(raw any, label string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if root == "/" || root == textutil.Home() {
+	if textutil.IsRoot(root) || textutil.SamePath(root, textutil.Home()) {
 		return "", Errorf("%s不能是根目录或home目录", label)
 	}
 	if !textutil.IsDir(root) {
@@ -395,11 +406,11 @@ func ValidateOutput(output string, sourceRoots []string, toolRoot string) (strin
 		return "", Errorf("输出目录不能是符号链接")
 	}
 	resolved := textutil.Realpath(path)
-	if resolved == "/" || resolved == textutil.Home() {
+	if textutil.IsRoot(resolved) || textutil.SamePath(resolved, textutil.Home()) {
 		return "", Errorf("输出目录不能是根目录或home目录")
 	}
 	if toolRoot != "" {
-		if resolved == textutil.Realpath(toolRoot) {
+		if textutil.SamePath(resolved, textutil.Realpath(toolRoot)) {
 			return "", Errorf("输出目录不能是工具根目录")
 		}
 	}
