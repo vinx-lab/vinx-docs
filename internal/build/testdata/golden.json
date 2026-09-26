@@ -1,0 +1,4258 @@
+{
+ "match": [
+  {
+   "path": "a.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "[a-c]*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a.md",
+   "pattern": "[!a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "?.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "[a-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "guide/*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "guide/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "*/a.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "[a-c]*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "?.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "[a-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/a.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "guide/*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "guide/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "*/a.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "[a-c]*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "?.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "[a-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/sub/a.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": true
+  },
+  {
+   "path": "drafts",
+   "pattern": "drafts/",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": true
+  },
+  {
+   "path": "drafts",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "**/drafts/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "drafts/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "drafts/wip.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "**/drafts/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "drafts/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/drafts/wip.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "**/*.json",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "top.json",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "top.json",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "top.json",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "top.json",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "top.json",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "top.json",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "**/*.json",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "guide/*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "guide/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/nested.json",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "a/**/c",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "[a-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "b/**/c",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "a/b/c/",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b/c",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "a/b/",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "[a-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a/b",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a/b",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "**/tmp/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "?.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "tmp/deep/t.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "中文/*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "中文/文档 1.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "A.MD",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "A.MD",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "*.MD",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "A.MD",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "A.MD",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "A.MD",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "A.MD",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "[a-c]*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "[!a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "a[[]1].md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "[a-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a[1].md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "[a-c]*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "[!a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "[a-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a-b.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "!x.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "!x.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "!x.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "!x.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "!x.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "!x.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "[a-c]*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "[!a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "a[]]b.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "[a-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "a]b.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets",
+   "pattern": "operations/secrets/",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "operations/secrets/drop.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "guide/*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "guide/**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "guide/skip*.md",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "x/*/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "guide/skip-me.md",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "**/*.json",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "**/drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "drafts/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "drafts/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "guide/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "guide/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "a/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "*/a.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "[a-c]*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "[!a]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "a[[]1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "a[]]b.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "[]-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "[z-a]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "*.MD",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "中文/*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "**/tmp/**",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "guide/skip*.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "?.md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "a/b/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "x/*/c",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "[!]",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "[--0]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "[a-]*",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "[!-]*",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "a\\[1].md",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "**",
+   "file": true,
+   "dir": true
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "b/**/c",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "a/b/c/",
+   "file": false,
+   "dir": false
+  },
+  {
+   "path": "x/a.b/c",
+   "pattern": "operations/secrets/",
+   "file": false,
+   "dir": false
+  }
+ ],
+ "suspect": [
+  {
+   "text": "password: Real-Secret-9x",
+   "hit": true
+  },
+  {
+   "text": "password: ${DB}",
+   "hit": false
+  },
+  {
+   "text": "# password: realsecret123",
+   "hit": false
+  },
+  {
+   "text": "Password = 'abcdefgh'",
+   "hit": true
+  },
+  {
+   "text": "api_key = \"changeme-but-long-value\"",
+   "hit": true
+  },
+  {
+   "text": "API-KEY:abcdef",
+   "hit": true
+  },
+  {
+   "text": "apikey: short",
+   "hit": false
+  },
+  {
+   "text": "mytoken: abcdefgh",
+   "hit": false
+  },
+  {
+   "text": "token:\n  abcdefgh",
+   "hit": true
+  },
+  {
+   "text": "token :   <your>",
+   "hit": false
+  },
+  {
+   "text": "secret: xxxabcdef",
+   "hit": false
+  },
+  {
+   "text": "secret: example123",
+   "hit": false
+  },
+  {
+   "text": "secret: ***abcd",
+   "hit": false
+  },
+  {
+   "text": "private_key={{ vault }}",
+   "hit": false
+  },
+  {
+   "text": "  access-key: AKIA1234567",
+   "hit": true
+  },
+  {
+   "text": "passwd:\tabcdefg",
+   "hit": true
+  },
+  {
+   "text": "tokenizer: abcdefghi",
+   "hit": false
+  },
+  {
+   "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx password: abcdefgh",
+   "hit": false
+  },
+  {
+   "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx password: abcdefgh",
+   "hit": true
+  },
+  {
+   "text": "中文password: abcdefgh",
+   "hit": false
+  },
+  {
+   "text": "中文 password: abcdefgh",
+   "hit": true
+  },
+  {
+   "text": "PASSWORD: 'changeme'",
+   "hit": true
+  },
+  {
+   "text": "secret: \"abc\"",
+   "hit": false
+  },
+  {
+   "text": "secret:\n\nabcdefgh",
+   "hit": true
+  },
+  {
+   "text": "token: your_value_here",
+   "hit": false
+  },
+  {
+   "text": "token: your-thing-long",
+   "hit": false
+  },
+  {
+   "text": "token=Your_value",
+   "hit": false
+  },
+  {
+   "text": "_token: abcdefgh",
+   "hit": false
+  },
+  {
+   "text": "ſecret: abcdefgh",
+   "hit": true
+  },
+  {
+   "text": "token: 　abcdefgh",
+   "hit": true
+  },
+  {
+   "text": "token: abcde f",
+   "hit": false
+  }
+ ],
+ "titles": [
+  {
+   "text": "# 标题",
+   "title": "标题"
+  },
+  {
+   "text": "   # 缩进标题",
+   "title": "缩进标题"
+  },
+  {
+   "text": "    # 四个空格",
+   "title": "fallback"
+  },
+  {
+   "text": "#没有空格",
+   "title": "fallback"
+  },
+  {
+   "text": "## 标题 ##",
+   "title": "标题"
+  },
+  {
+   "text": "# 标题 #  ",
+   "title": "标题"
+  },
+  {
+   "text": "#\t制表",
+   "title": "制表"
+  },
+  {
+   "text": "###### 六级",
+   "title": "六级"
+  },
+  {
+   "text": "####### 七级",
+   "title": "fallback"
+  },
+  {
+   "text": "# 　全角空格　",
+   "title": "全角空格"
+  },
+  {
+   "text": "文本\n# 第二行",
+   "title": "第二行"
+  },
+  {
+   "text": "# a # b",
+   "title": "a"
+  },
+  {
+   "text": "﻿# BOM",
+   "title": "fallback"
+  },
+  {
+   "text": "#  #  ",
+   "title": "#"
+  },
+  {
+   "text": "# a#b",
+   "title": "a#b"
+  },
+  {
+   "text": "\r\n# crlf",
+   "title": "crlf"
+  },
+  {
+   "text": "# 尾随\u000b换行",
+   "title": "尾随"
+  }
+ ],
+ "search": [
+  {
+   "text": "# 标题\n\n正文 *强调* `code`\n\n```bash\necho hi\n```\n结尾",
+   "terms": "标题 正文 强调 code 结尾"
+  },
+  {
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "terms": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "text": "[链接](url) | 表格 |",
+   "terms": "链接 url 表格"
+  },
+  {
+   "text": "```未闭合\n代码",
+   "terms": "未闭合 代码"
+  },
+  {
+   "text": "多个   空白\t\n\n换行　全角",
+   "terms": "多个 空白 换行 全角"
+  },
+  {
+   "text": "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中```x```",
+   "terms": "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中"
+  }
+ ]
+}

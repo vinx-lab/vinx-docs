@@ -1,0 +1,100 @@
+{
+  "packages": [
+    {
+      "name": "docsify",
+      "version": "4.13.1",
+      "license": "MIT",
+      "source": "https://registry.npmjs.org/docsify/-/docsify-4.13.1.tgz",
+      "integrity": "sha512-BsDypTBhw0mfslw9kZgAspCMZSM+sUIIDg5K/t1hNLkvbem9h64ZQc71e1IpY+iWsi/KdeqfazDfg52y2Lmm0A==",
+      "files": [
+        "docsify.min.js",
+        "search.min.js",
+        "vue.css",
+        "vue-offline.css",
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "mermaid",
+      "version": "12.0.0",
+      "license": "MIT",
+      "source": "https://registry.npmjs.org/mermaid/-/mermaid-12.0.0.tgz",
+      "integrity": "sha512-/wQXC9iBxoGV8p3erbvaXs9h77VyLDBH6GdayVjj3hEcSQhFU4N1WUhUppotCEqlIxI2pRMwjwBSwTB1MfZBgQ==",
+      "files": [
+        "mermaid.min.js",
+        "mermaid-LICENSE"
+      ]
+    },
+    {
+      "name": "xlsx (SheetJS CE)",
+      "version": "0.20.3",
+      "license": "Apache-2.0",
+      "source": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+      "integrity": "sha256-8dc73fc3b00203e72d176e85b50938627c7b086e607c682e8d3c22c02bb99fe8",
+      "note": "npm registry上的xlsx停在0.18.5且有已知CVE；SheetJS官方发布已迁至cdn.sheetjs.com。",
+      "files": [
+        "xlsx.full.min.js",
+        "xlsx-LICENSE"
+      ]
+    },
+    {
+      "name": "codemirror",
+      "version": "5.65.21",
+      "license": "MIT",
+      "source": "https://registry.npmmirror.com/codemirror/-/codemirror-5.65.21.tgz",
+      "integrity": "sha512-6teYk0bA0nR3QP0ihGMoxuKzpl5W80FpnHpBJpgy66NK3cZv5b/d/HY8PnRvfSsCG1MTfr92u2WUl+wT0E40mQ==",
+      "note": "5.x 最终维护版；从包内 lib/、mode/、addon/ 原样摘取，平铺到 codemirror/ 目录，未修改内容。",
+      "files": [
+        "codemirror/LICENSE",
+        "codemirror/active-line.js",
+        "codemirror/codemirror.css",
+        "codemirror/codemirror.js",
+        "codemirror/continuelist.js",
+        "codemirror/css.js",
+        "codemirror/htmlmixed.js",
+        "codemirror/javascript.js",
+        "codemirror/markdown.js",
+        "codemirror/matchbrackets.js",
+        "codemirror/placeholder.js",
+        "codemirror/xml.js"
+      ]
+    },
+    {
+      "name": "qrcode-generator",
+      "version": "1.4.4",
+      "license": "MIT",
+      "source": "https://registry.npmjs.org/qrcode-generator/-/qrcode-generator-1.4.4.tgz",
+      "note": "只取包内 qrcode.js，未修改；许可证声明在文件头部。",
+      "files": [
+        "qrcode.js"
+      ]
+    }
+  ],
+  "files": {
+    "LICENSE": "65a671d4b5bda281aac624bc6901d8a8c494c15dc3e329760e8652aa0d76519a",
+    "docsify.min.js": "9123f808d3f6ad736b4a8f99944a611f87c5d4f9328030080a5c029ed5f450a5",
+    "mermaid-LICENSE": "ec9fb67dcb25eccc416ed56e1aab819222c805a2a4bfe4cb19e7556bf2ffde80",
+    "mermaid.min.js": "28fca7ae6ebc7ed7bb63bde63136a74bfef14f296a57e403657eeb8b32836073",
+    "search.min.js": "ab20792dc69dfd9cdb19479f716f69a619e577dec452739196770134dd71f297",
+    "vue-offline.css": "153f8a221cba65ab9c4bcfabe97f692e7539c54572d8b75262e924bee7ab6feb",
+    "vue.css": "1f8ddcde10fe1d9f3ab60de8469ed26f9b09716fb882b225d666d4f62838de2e",
+    "xlsx-LICENSE": "4d2a38ac35cda06a555c84074a819d413339cd3691b822cae50f8f322fe01f64",
+    "xlsx.full.min.js": "cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41",
+    "codemirror/LICENSE": "168a4becc968f5001e2ee2e0291b6e4daabafc1894a11ade1e11d56e96096e07",
+    "codemirror/active-line.js": "3afbcf78835c9bdc342e3992c53d9b74286722613bb1a8adc9d140edc8737ee8",
+    "codemirror/codemirror.css": "eb494ea972d2661ef86f7f6ac656dd6786d721e49c9c1b46e1eb967e4b6f9bf3",
+    "codemirror/codemirror.js": "e98aac5ffa07bae58acd4ff07c4293059f8921c0ae0eba506929d8c6f41c9288",
+    "codemirror/continuelist.js": "6ba9cd9528b74e7f76f4b9ce9ed0677bfed7057d1aade0050185368cfd0ea2e3",
+    "codemirror/css.js": "60f0689e5c6af7f36c341e8e1341a4f10b4f0a04cebfb7341bcbedba9b572b32",
+    "codemirror/htmlmixed.js": "fe5912e1d10f8fecb98bd31e2f957c0bbc9abf6b505d11b6dbcd27542d0fdcad",
+    "codemirror/javascript.js": "1311c73c66308ba6f78512b4c2e770a6900c80c3629683763329668ee6111163",
+    "codemirror/markdown.js": "8fe7b11848f79cc9119b2a239f38a00944f6f2bb764a00bc837ecf8d34cf7690",
+    "codemirror/matchbrackets.js": "9d23a177f1e4d07e3acc37c210ffbe4c1c2eb4d55bbe54c16d3e7ad3d04d0401",
+    "codemirror/placeholder.js": "44619626e2301fc16ebade252564e2c064113483e02f2fc8d8d262aed2485b9c",
+    "codemirror/xml.js": "dc7e44d410399326f802e2924573cbf6f942a79f647fd0b97f0b607973bc9a09",
+    "qrcode.js": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780"
+  },
+  "derivations": {
+    "vue-offline.css": "vue.css去除唯一Google Fonts @import；其余内容不变。"
+  }
+}

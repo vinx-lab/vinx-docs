@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 2,
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8000,
+    "publicBase": "http://my-host:8000"
+  },
+  "protectedPorts": [],
+  "settings": {
+    "autoSync": true,
+    "debounceSeconds": 3,
+    "recentDays": 14,
+    "recentLimit": 12,
+    "displayName": "我"
+  },
+  "projects": [
+    {
+      "id": "project-a",
+      "name": "示例项目 A（单目录）",
+      "docsPath": "~/projects/project-a/docs",
+      "home": "README.md",
+      "exclude": [
+        "**/private/**",
+        "**/*.bak"
+      ]
+    },
+    {
+      "id": "project-b",
+      "name": "示例项目 B（文档分散在仓库多处）",
+      "roots": [
+        {
+          "prefix": "",
+          "path": "~/projects/project-b/docs"
+        },
+        {
+          "prefix": "backend",
+          "path": "~/projects/project-b/backend/docs"
+        },
+        {
+          "prefix": "frontend",
+          "path": "~/projects/project-b/frontend/docs"
+        },
+        {
+          "prefix": "ops",
+          "path": "~/projects/project-b/devops"
+        }
+      ],
+      "home": "README.md",
+      "exclude": [
+        "ops/servers.md",
+        "**/private/**"
+      ]
+    }
+  ]
+}

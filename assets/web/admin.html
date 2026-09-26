@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vinx Docs · 管理后台</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/theme.js"></script>
+  <script src="/assets/icons.js" defer></script>
+  <script src="/assets/admin.js" defer></script>
+</head>
+<body class="hub admin">
+  <a class="skip-link" href="#projects-heading">跳到项目列表</a>
+  <main class="hub-main">
+    <header class="hub-top">
+      <p class="brand"><a href="/">Vinx Docs</a> <span>管理后台</span></p>
+      <nav class="hub-actions admin-top-actions" aria-label="主导航">
+        <a class="ghost-button" href="/">返回阅读</a>
+        <a class="ghost-button" href="/published.html">页面</a>
+        <a class="ghost-button" href="/comments.html">批注</a>
+        <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
+      </nav>
+    </header>
+
+    <div id="runtime-stats" class="status-strip" aria-label="运行状态">正在读取运行状态…</div>
+    <p id="admin-status" class="manage-status hub-status" role="status" aria-live="polite">正在连接管理接口…</p>
+
+    <section class="hub-section" aria-labelledby="projects-heading">
+      <div class="section-head">
+        <h2 id="projects-heading">已接入项目<span id="project-count"></span></h2>
+        <div class="section-tools">
+          <button id="refresh-all" type="button" class="ghost-button"><span data-icon="sync"></span>立即同步全部</button>
+          <button id="toggle-add" type="button" class="ghost-button" aria-expanded="false" aria-controls="add-panel"><span data-icon="plus"></span>接入项目</button>
+        </div>
+      </div>
+      <div id="add-panel" class="manage-panel" hidden>
+        <form id="add-form">
+          <label for="new-path">文档目录路径</label>
+          <div class="path-entry">
+            <input id="new-path" type="text" placeholder="/home/你/projects/项目/docs" autocomplete="off" spellcheck="false" required aria-describedby="add-hint">
+            <button type="submit">接入并同步</button>
+          </div>
+          <p id="add-hint" class="card-note">填写运行 Vinx Docs 的主机上的绝对路径。接入后默认收录整个目录，之后在项目详情里添加排除规则。</p>
+        </form>
+      </div>
+      <p id="admin-empty" class="card-note admin-empty">正在读取配置…</p>
+      <div id="admin-split" class="admin-split" data-view="list" hidden>
+        <nav class="admin-nav" aria-label="项目列表">
+          <label class="sr-only" for="project-filter">筛选项目</label>
+          <input id="project-filter" type="search" placeholder="按名称、ID或路径筛选" autocomplete="off" spellcheck="false">
+          <ul id="admin-nav"></ul>
+          <p id="admin-nav-empty" class="card-note" hidden>没有匹配的项目。</p>
+        </nav>
+        <section id="admin-detail" class="admin-card admin-detail" tabindex="-1" aria-label="项目详情"></section>
+      </div>
+    </section>
+
+    <section class="hub-section" aria-labelledby="settings-heading">
+      <div class="section-head"><h2 id="settings-heading">设置</h2></div>
+      <div class="admin-card settings-card">
+        <p class="card-note">开启后监听已接入的文档目录，文件保存并静默数秒后自动重建阅读副本。监听会跳过隐藏目录与 <code>node_modules</code> 这类缓存目录；目录数量过多时自动降级为定时轮询。</p>
+        <form id="settings-form" class="settings-form">
+          <label class="switch-row">
+            <input type="checkbox" id="auto-sync">
+            <span>开启自动同步</span>
+          </label>
+          <label class="field-row">
+            <span>你的称呼（批注回复的署名）</span>
+            <input type="text" id="display-name" maxlength="40" autocomplete="off">
+          </label>
+          <label class="field-row">
+            <span>防抖等待（秒）</span>
+            <input type="number" id="debounce" min="1" max="3600" step="1">
+          </label>
+          <label class="field-row">
+            <span>“最近更新”时间范围（天）</span>
+            <input type="number" id="recent-days" min="1" max="3600" step="1">
+          </label>
+          <label class="field-row">
+            <span>每个项目“最近更新”最多条数</span>
+            <input type="number" id="recent-limit" min="1" max="100" step="1">
+          </label>
+          <button type="submit">保存设置</button>
+        </form>
+      </div>
+    </section>
+
+    <footer class="hub-footer">
+      <p>强制安全规则不可在后台关闭：隐藏路径、缓存与仓库目录、符号链接、凭据与SSH文件名、不支持的类型、含私钥的文本一律不收录。</p>
+      <p>本站不设登录。能访问本端口的设备都能阅读和管理，请只在受信任的局域网内使用。所有操作只影响 Vinx Docs 自己的配置与阅读副本，不改动项目原文。</p>
+    </footer>
+  </main>
+</body>
+</html>

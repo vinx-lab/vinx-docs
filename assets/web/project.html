@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Vinx Docs · 文档阅读</title>
+  <link rel="stylesheet" href="/vendor/vue-offline.css">
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/theme.js"></script>
+  <script src="/assets/search.js" defer></script>
+  <script src="/assets/links.js" defer></script>
+  <script src="/assets/vinx-editor.js" defer></script>
+  <script src="/assets/vinx-comments.js" defer></script>
+  <script src="/assets/reader-vinx.js" defer></script>
+  <script src="/assets/reader.js" defer></script>
+</head>
+<body class="reader">
+  <div class="reader-top">
+    <a href="/" class="home-link" title="返回文档中心主页">← 文档中心</a>
+    <span class="divider" aria-hidden="true">|</span>
+    <a id="project-label" href="#/" title="回到本项目首页">正在加载项目</a>
+    <form id="reader-search" class="reader-search" role="search">
+      <label class="sr-only" for="reader-search-input">跨项目搜索</label>
+      <input id="reader-search-input" type="search" placeholder="跨项目搜索…" autocomplete="off" spellcheck="false">
+    </form>
+    <button id="font-toggle" type="button" class="ghost-button" aria-label="切换正文字号">字号</button>
+    <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
+    <button id="edit-doc" type="button" class="ghost-button" title="在页面上修改这篇文档的源文件">编辑</button>
+    <button id="comment-toggle" type="button" class="ghost-button" title="查看和写批注；选中正文文字也能直接批注">批注</button>
+  </div>
+  <div id="update-notice" class="update-notice" role="status" hidden>
+    <span>文档已在后台更新</span>
+    <button id="update-reload" type="button">刷新查看</button>
+    <button id="update-dismiss" type="button" class="update-dismiss" aria-label="暂不刷新">稍后</button>
+  </div>
+  <div id="reader-search-results" class="search-results floating" hidden aria-live="polite"></div>
+  <div id="app" role="status">正在读取注册文档…</div>
+</body>
+</html>

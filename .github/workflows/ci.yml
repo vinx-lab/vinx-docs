@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+# 真实浏览器测试不在 CI 里跑（需要本机的 Playwright 和 Chromium）。本地运行：
+#   scripts/build.sh
+#   PLAYWRIGHT_MODULE=<playwright-core 模块目录> PLAYWRIGHT_EXECUTABLE=<Chromium 路径> \
+#     node tests/browser/run.cjs dist/vinx-docs
+
+jobs:
+  check:
+    name: vet / test / gofmt / 前端单元测试
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "以下文件需要 gofmt："
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: go vet
+        run: go vet ./...
+      - name: go test
+        run: go test -count=1 ./...
+      - name: 链接解析单元测试
+        run: node --test tests/links.test.cjs
+
+  build:
+    name: build / test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    # macOS 和 Windows 是实验性支持：结果仅供参考，不阻塞合并。
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            experimental: false
+          - os: macos-latest
+            experimental: true
+          - os: windows-latest
+            experimental: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: go build
+        run: go build ./...
+      - name: go test
+        run: go test -count=1 ./...

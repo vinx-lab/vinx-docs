@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Vinx Docs · 表格预览</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/theme.js"></script>
+  <script src="/vendor/xlsx.full.min.js" defer></script>
+  <script src="/assets/sheet.js" defer></script>
+</head>
+<body class="reader sheet-page">
+  <div class="reader-top">
+    <a href="/" class="home-link" title="返回文档中心主页">← 文档中心</a>
+    <span class="divider" aria-hidden="true">|</span>
+    <a id="project-link" class="home-link" href="#" title="回到本项目">本项目</a>
+    <span id="sheet-label">正在加载表格</span>
+    <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
+    <a id="download" class="ghost-button" href="#" download>下载原件</a>
+  </div>
+  <main class="sheet-main">
+    <div id="tabs" class="sheet-tabs" role="tablist"></div>
+    <div id="sheet" class="sheet-body" role="status">正在读取工作簿…</div>
+  </main>
+</body>
+</html>

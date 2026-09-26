@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vinx Docs · 批注</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/theme.js"></script>
+  <script src="/assets/vinx-editor.js" defer></script>
+  <script src="/assets/comments.js" defer></script>
+</head>
+<body class="hub">
+  <main class="hub-main">
+    <header class="hub-top">
+      <p class="brand"><a href="/">Vinx Docs</a> <span>批注</span></p>
+      <nav class="hub-actions admin-top-actions" aria-label="主导航">
+        <a class="ghost-button" href="/">返回阅读</a>
+        <a class="ghost-button" href="/published.html">页面</a>
+        <a class="ghost-button" href="/admin.html">管理后台</a>
+        <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
+      </nav>
+    </header>
+    <p class="section-hint comments-hint">在文档里选中文字、在原型上点选元素都能写批注。交给 agent 的批注，由正在监听的 agent 会话处理；没有 agent 在线时排队，回到 SSH 里说「处理批注」即可。</p>
+    <p id="agents" class="vinx-agents"></p>
+    <div class="section-head">
+      <div class="vinx-filter" role="tablist" aria-label="按状态筛选">
+        <button type="button" class="ghost-button" data-status="open,sent" aria-selected="true">未解决</button>
+        <button type="button" class="ghost-button" data-status="sent">已交给agent</button>
+        <button type="button" class="ghost-button" data-status="resolved">已解决</button>
+        <button type="button" class="ghost-button" data-status="">全部</button>
+      </div>
+      <span id="summary" class="section-note"></span>
+    </div>
+    <p id="status" class="vinx-status" role="status"></p>
+    <div id="list" class="vinx-overview" aria-live="polite">正在读取批注…</div>
+  </main>
+</body>
+</html>

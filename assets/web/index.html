@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vinx Docs · 项目文档</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/theme.js"></script>
+  <script src="/assets/icons.js" defer></script>
+  <script src="/vendor/qrcode.js" defer></script>
+  <script src="/assets/search.js" defer></script>
+  <script src="/assets/home.js" defer></script>
+</head>
+<body class="hub">
+  <a class="skip-link" href="#projects-heading">跳到项目列表</a>
+  <main class="hub-main">
+    <header class="hub-top">
+      <p class="brand">Vinx Docs <span>开发文档中心</span></p>
+      <form id="global-search" class="global-search" role="search">
+        <label class="sr-only" for="search-input">跨项目搜索</label>
+        <input id="search-input" type="search" placeholder="跨项目搜索文档标题与正文…" autocomplete="off" spellcheck="false">
+      </form>
+      <nav class="hub-actions" aria-label="主导航">
+        <a class="ghost-button" href="/published.html">页面</a>
+        <a id="comments-link" class="ghost-button" href="/comments.html">批注</a>
+        <a class="ghost-button" href="/admin.html">管理后台</a>
+        <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
+      </nav>
+    </header>
+    <div id="search-results" class="search-results" hidden aria-live="polite"></div>
+
+    <section class="hub-section" aria-labelledby="projects-heading">
+      <div class="section-head">
+        <h2 id="projects-heading">项目文档</h2>
+        <div class="section-tools">
+          <label for="project-filter" class="sr-only">筛选项目</label>
+          <input id="project-filter" type="search" placeholder="筛选项目">
+          <button id="sync-docs" type="button" class="ghost-button" disabled><span data-icon="sync"></span>立即同步</button>
+          <button id="toggle-register" type="button" class="ghost-button" aria-expanded="false" aria-controls="register-panel"><span data-icon="plus"></span>接入项目</button>
+        </div>
+      </div>
+      <p id="manage-status" class="manage-status hub-status" role="status" aria-live="polite">正在连接管理接口…</p>
+      <div id="register-panel" class="manage-panel" hidden>
+        <form id="register-project">
+          <label for="docs-path">文档目录路径</label>
+          <div class="path-entry">
+            <input id="docs-path" name="docsPath" type="text" placeholder="/home/你/projects/项目/docs" required autocomplete="off" spellcheck="false" aria-describedby="path-hint" disabled>
+            <button id="register-docs" type="submit" disabled>接入并同步</button>
+          </div>
+          <p id="path-hint">填写运行 Vinx Docs 的主机上的 docs 绝对路径。只读取并生成阅读副本，不修改项目原文；默认收录该目录内全部支持的文档与附件，隐藏文件、凭据与SSH文件名、含私钥的文本和不支持的类型始终不收录。范围与排除规则在<a href="/admin.html">管理后台</a>调整。</p>
+        </form>
+      </div>
+      <div id="projects" class="project-list" aria-live="polite">正在读取项目清单…</div>
+    </section>
+
+    <section class="hub-section" aria-labelledby="published-heading" id="published-section" hidden>
+      <div class="section-head">
+        <h2 id="published-heading">页面</h2>
+        <a class="section-note" href="/published.html">全部页面 →</a>
+      </div>
+      <p class="section-hint">agent 发布的原型、报告和示意图。点卡片进入预览，可以在里面批注和改源码；右侧按钮直接在新窗口打开原页面。</p>
+      <div id="published" class="artifact-grid"></div>
+    </section>
+
+    <footer class="hub-footer">
+      <p>本站不设登录：能访问 8000 端口的设备都能阅读、同步和接入项目，请只在受信任的网络里使用。</p>
+      <details class="access-panel">
+        <summary>在手机上打开</summary>
+        <div class="access-body">
+          <div>
+            <p>扫描二维码打开当前地址。如果现在用的是 <code>localhost</code>，请先在浏览器换成主机的局域网 IP 再扫码。</p>
+            <p class="access-url" id="access-url"></p>
+          </div>
+          <div id="qr" class="qr" aria-label="当前访问地址的二维码"></div>
+        </div>
+      </details>
+    </footer>
+  </main>
+</body>
+</html>

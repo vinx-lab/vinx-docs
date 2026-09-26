@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Vinx Docs · 页面</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/theme.js"></script>
+  <script src="/assets/vinx-editor.js" defer></script>
+  <script src="/assets/vinx-comments.js" defer></script>
+  <script src="/assets/published.js" defer></script>
+</head>
+<body class="published">
+  <header class="published-top">
+    <a class="brand" href="/">Vinx Docs</a>
+    <span class="divider" aria-hidden="true">/</span>
+    <h1>页面</h1>
+    <span id="current-title" class="published-current"></span>
+    <div class="hub-actions">
+      <button id="pick-comment" type="button" class="ghost-button" title="点选页面上的元素或拖出一个区域写批注" hidden>点选批注</button>
+      <button id="comment-toggle" type="button" class="ghost-button" hidden>批注</button>
+      <select id="edit-file" class="ghost-select" aria-label="选择要编辑的源文件" hidden></select>
+      <button id="edit-source" type="button" class="ghost-button" hidden>编辑源码</button>
+      <a id="open-new" class="ghost-button" href="#" target="_blank" rel="noopener" hidden>新窗口打开</a>
+      <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
+    </div>
+  </header>
+  <div class="published-split">
+    <nav class="published-nav" aria-label="页面列表">
+      <p id="follow-note" class="section-note">有新页面发布时自动切换到最新一个</p>
+      <div id="artifact-list" class="published-list" aria-live="polite">正在读取页面列表…</div>
+    </nav>
+    <main class="published-view">
+      <iframe id="artifact-frame" title="页面预览" sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" hidden></iframe>
+      <div id="artifact-empty" class="published-empty">
+        <p>还没有页面。</p>
+        <p>agent 做完页面后执行 <code>vinx-docs publish &lt;入口.html&gt;</code>，这里会自动出现，不用刷新。</p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

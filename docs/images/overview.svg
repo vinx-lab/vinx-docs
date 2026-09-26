@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 290" width="860" height="290" role="img" aria-label="Vinx Docs 工作流程：agent 写文档和页面，Vinx Docs 收录和发布，你阅读并批注，批注交回 agent 修改">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-back" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#c2410c"/>
+    </marker>
+    <style>
+      text { font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+      .title { font-size: 17px; font-weight: 600; fill: #0f172a; }
+      .sub { font-size: 12.5px; fill: #475569; }
+      .edge { font-size: 13px; fill: #334155; }
+      .back { font-size: 13px; fill: #c2410c; }
+      .line { stroke: #64748b; stroke-width: 1.6; fill: none; }
+      .line-back { stroke: #c2410c; stroke-width: 1.6; fill: none; stroke-dasharray: 5 4; }
+    </style>
+  </defs>
+  <rect width="860" height="290" rx="14" fill="#f8fafc"/>
+
+  <!-- 节点 -->
+  <rect x="20" y="60" width="150" height="84" rx="12" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="95" y="94" text-anchor="middle" class="title">agent</text>
+  <text x="95" y="116" text-anchor="middle" class="sub">Claude Code 等</text>
+  <text x="95" y="133" text-anchor="middle" class="sub">写方案、做原型</text>
+
+  <rect x="240" y="60" width="150" height="84" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="315" y="94" text-anchor="middle" class="title">项目里的文件</text>
+  <text x="315" y="116" text-anchor="middle" class="sub">docs/*.md</text>
+  <text x="315" y="133" text-anchor="middle" class="sub">HTML 原型、报告</text>
+
+  <rect x="460" y="52" width="160" height="100" rx="12" fill="#ecfeff" stroke="#0e7490" stroke-width="2.2"/>
+  <text x="540" y="92" text-anchor="middle" class="title" style="fill:#0e7490">Vinx Docs</text>
+  <text x="540" y="114" text-anchor="middle" class="sub">本机网站 :8000</text>
+  <text x="540" y="131" text-anchor="middle" class="sub">不上传、不复制</text>
+
+  <rect x="690" y="60" width="150" height="84" rx="12" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>
+  <text x="765" y="94" text-anchor="middle" class="title">你</text>
+  <text x="765" y="116" text-anchor="middle" class="sub">电脑或手机浏览器</text>
+  <text x="765" y="133" text-anchor="middle" class="sub">同一网络内</text>
+
+  <!-- 正向 -->
+  <path d="M170 102H236" class="line" marker-end="url(#arrow)"/>
+  <text x="205" y="92" text-anchor="middle" class="edge">① 写文件</text>
+
+  <path d="M390 102H456" class="line" marker-end="url(#arrow)"/>
+  <text x="425" y="74" text-anchor="middle" class="edge">② 收录</text>
+  <text x="425" y="92" text-anchor="middle" class="edge">发布</text>
+
+  <path d="M620 102H686" class="line" marker-end="url(#arrow)"/>
+  <text x="655" y="92" text-anchor="middle" class="edge">③ 阅读</text>
+
+  <!-- 回传 -->
+  <path d="M765 144V190H580V156" class="line-back" marker-end="url(#arrow-back)"/>
+  <text x="672" y="210" text-anchor="middle" class="back">④ 选中文字、点选元素写批注</text>
+
+  <path d="M500 152V250H95V148" class="line-back" marker-end="url(#arrow-back)"/>
+  <text x="298" y="270" text-anchor="middle" class="back">⑤ 交给 agent：唤醒会话，领取批注、改源文件、回复</text>
+</svg>
