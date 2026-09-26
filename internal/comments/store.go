@@ -55,7 +55,7 @@ func knownStatus(status string) bool {
 	return false
 }
 
-var scopeRE = regexp.MustCompile(`^(path:/.+|project:[A-Za-z0-9_-]+|a:[a-z0-9]{4,32})\n?$`)
+var scopeRE = regexp.MustCompile(`^(path:.+|project:[A-Za-z0-9_-]+|a:[a-z0-9]{4,32})\n?$`)
 
 // Schema 是批注库的表结构；改动需要考虑已有的库文件。
 const Schema = `
@@ -529,7 +529,9 @@ func (c *Conn) Subscribe(agent, name string, scopes []string, thread string) (st
 		return "", config.Errorf("scope 写法：path:/绝对目录、project:<项目ID> 或 a:<短码>")
 	}
 	for _, scope := range scopes {
-		if !scopeRE.MatchString(scope) {
+		// path: 后面必须是本平台的绝对路径（Linux/macOS 以 / 开头，Windows 带盘符，如 C:/proj）。
+		value, isPath := strings.CutPrefix(strings.TrimSuffix(scope, "\n"), "path:")
+		if !scopeRE.MatchString(scope) || (isPath && !textutil.IsAbs(value)) {
 			return "", config.Errorf("scope 写法：path:/绝对目录、project:<项目ID> 或 a:<短码>")
 		}
 	}

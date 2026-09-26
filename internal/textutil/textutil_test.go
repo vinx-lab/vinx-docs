@@ -8,7 +8,11 @@ import (
 
 func TestNormIsLiteral(t *testing.T) {
 	cases := map[string]string{
-		"": ".", ".": ".", "a//b/./c/": "a/b/c", "/a/../b": "/a/../b", "//a": "//a", "///a": "/a", "a/..": "a/..",
+		"": ".", ".": ".", "a//b/./c/": "a/b/c", "/a/../b": "/a/../b", "///a": "/a", "a/..": "a/..",
+	}
+	if !windows {
+		// POSIX 保留开头恰好两个斜杠；Windows 上 //a 是 UNC 前缀，另见 TestWindowsPathRules。
+		cases["//a"] = "//a"
 	}
 	for in, want := range cases {
 		if got := Norm(in); got != want {
