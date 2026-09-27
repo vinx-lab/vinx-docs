@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vinx-lab/vinx-docs/internal/server"
 	"github.com/vinx-lab/vinx-docs/internal/testutil"
 )
 
@@ -120,7 +121,7 @@ func TestInstallServiceDryRunWritesNothing(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(fakeHome, ".config")); err == nil {
 		t.Fatal("dry-run 不能写文件")
 	}
-	// 每个平台写的启动项不同：Linux 是 systemd 用户单元，macOS 是 LaunchAgent，Windows 只打印计划任务的做法。
+	// 每个平台写的启动项不同：Linux 是 systemd 用户单元，macOS 是 LaunchAgent，Windows 是当前用户的 Run 注册表值。
 	switch runtime.GOOS {
 	case "linux":
 		if !strings.Contains(stdout, `Environment="VINX_DOCS_HOME=`+home+`"`) || !strings.Contains(stdout, " serve\nRestart=on-failure\n") {
@@ -132,7 +133,8 @@ func TestInstallServiceDryRunWritesNothing(t *testing.T) {
 			t.Fatal(stdout)
 		}
 	case "windows":
-		if !strings.Contains(stdout, "schtasks /Create") || !strings.Contains(stdout, "VINX_DOCS_HOME="+filepath.ToSlash(home)+"\n") {
+		if !strings.Contains(stdout, `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run\vinx-docs`) ||
+			!strings.Contains(stdout, `--home "`+filepath.ToSlash(home)+`" start`) {
 			t.Fatal(stdout)
 		}
 	}
@@ -144,6 +146,32 @@ func TestInstallServiceDryRunWritesNothing(t *testing.T) {
 	}
 	if plist := LaunchdPlist("/h", []string{"/bin/vinx-docs", "serve"}); !strings.Contains(plist, "<array><string>/bin/vinx-docs</string><string>serve</string></array>") {
 		t.Fatal(plist)
+	}
+}
+
+func TestWindowsRunCommand(t *testing.T) {
+	cases := map[string]string{
+		`C:\bin\vinx-docs.exe`:   `C:\bin\vinx-docs.exe`,
+		`C:\Program Files\v.exe`: `"C:\Program Files\v.exe"`,
+		`C:\data dir\`:           `"C:\data dir\\"`,
+		`a "b"`:                  `"a \"b\""`,
+		`a\"b c`:                 `"a\\\"b c"`,
+		``:                       `""`,
+	}
+	for input, want := range cases {
+		if got := windowsQuote(input); got != want {
+			t.Errorf("windowsQuote(%q) = %q, want %q", input, got, want)
+		}
+	}
+	got := WindowsRunCommand(`C:\Users\A B\AppData\Local\vinx-docs`, `C:\tools\vinx-docs.exe`)
+	if want := `C:\tools\vinx-docs.exe --home "C:\Users\A B\AppData\Local\vinx-docs" start`; got != want {
+		t.Fatalf("%q", got)
+	}
+	saved := server.ExtraEnv
+	t.Cleanup(func() { server.ExtraEnv = saved })
+	server.ExtraEnv = []string{"VINX_DOCS_ASSETS=D:/src/assets"}
+	if got := WindowsRunCommand("D:/h", "v.exe"); got != "v.exe --home D:/h --assets D:/src/assets start" {
+		t.Fatalf("%q", got)
 	}
 }
 

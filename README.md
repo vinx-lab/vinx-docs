@@ -123,9 +123,17 @@ install -m 755 dist/vinx-docs ~/.local/bin/
 
 ![手机上的首页（深色）](docs/images/mobile-dark.png)
 
-**开机自启**：`vinx-docs install-service`（Linux 写 systemd 用户单元，macOS 写 launchd；加 `--dry-run` 只预览不改动）。
+**开机自启**：`vinx-docs install-service`，加 `--dry-run` 只预览不改动。各平台的做法：
 
-**升级**：重新构建、覆盖可执行文件，再重启服务：用 `start` 启动的执行 `vinx-docs restart`，装成开机自启的执行 `systemctl --user restart vinx-docs`。**卸载**：`vinx-docs uninstall-service`，删除可执行文件；运行数据在家目录，需要时手动删除。
+| 平台 | 写入的启动项 | 生效方式 |
+| --- | --- | --- |
+| Linux | systemd 用户单元 `~/.config/systemd/user/vinx-docs.service` | 下次登录启动；现在切换：`vinx-docs stop && systemctl --user start vinx-docs`。注销后仍要运行需开启 linger：`sudo loginctl enable-linger $USER` |
+| macOS | LaunchAgent `~/Library/LaunchAgents/vinx-docs.plist` | 执行输出里提示的 `launchctl load -w` |
+| Windows | 当前用户的登录启动项 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` 里的 `vinx-docs` 值，内容是 `"<程序路径>" --home "<家目录>" start` | 下次登录启动；现在启动：`vinx-docs start`。不需要管理员权限 |
+
+Windows 的限制：登录时可能闪一下控制台窗口；服务意外退出后不会自动重启（重新登录或手动 `vinx-docs start`）；登录后才运行。程序放在固定位置（例如 `%LOCALAPPDATA%\Programs\vinx-docs\`）再登记，移动程序后要重新执行 `install-service`。
+
+**升级**：重新构建、覆盖可执行文件，再重启服务：用 `start` 启动的（包括 Windows 的登录启动项）执行 `vinx-docs restart`，Linux 装成开机自启的执行 `systemctl --user restart vinx-docs`。**卸载**：`vinx-docs uninstall-service`，删除可执行文件；运行数据在家目录，需要时手动删除。
 
 > **安全提醒**：没有登录。能访问这个端口的设备都能阅读全部收录内容、写批注，也能通过页面编辑器改写源文件。只在可信的网络里使用，不要暴露到公网。
 
@@ -158,7 +166,7 @@ install -m 755 dist/vinx-docs ~/.local/bin/
 
 | 用途 | 命令 |
 | --- | --- |
-| 服务 | `start` `stop` `restart` `status` `serve`（前台运行，给 systemd 用） |
+| 服务 | `start` `stop` `restart` `status` `serve`（前台运行，给 systemd / launchd 用） |
 | 项目文档 | `refresh`（重建站点）`register` `unregister` `settings` `validate` |
 | 页面 | `publish` `unpublish` `artifacts` |
 | 批注 | `comments` `comment` `claim` `reply` `resolve` `reopen` `watch` `subscribe` `unsubscribe` `agents` |

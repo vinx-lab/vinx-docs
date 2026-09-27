@@ -1,6 +1,6 @@
 # 部署、安全导出与验证规则
 
-更新日期：2026-09-26；状态：单个 Go 程序（前端内嵌，不依赖 Nginx / Docker）已实现并通过测试。
+更新日期：2026-09-27；状态：单个 Go 程序（前端内嵌，不依赖 Nginx / Docker）已实现并通过测试。
 
 ## 运行方式
 
@@ -11,12 +11,31 @@ vinx-docs start     # 后台启动：先监听端口，再在后台重建站点�
 vinx-docs status    # 家目录、地址、PID、自动同步状态
 vinx-docs stop      # 只停止由 start 启动、且正在应答的那个服务
 vinx-docs serve     # 前台运行，给 systemd / launchd 用
-vinx-docs install-service   # Linux 写 systemd 用户单元，macOS 写 launchd plist；Windows 给出任务计划程序命令
+vinx-docs install-service   # 登记开机自启，见下文；--dry-run 只预览
 ```
 
 - 进程身份一律通过 `/api/healthz` 确认：返回的服务名、PID 和家目录都要对上，才会被 `stop` 停止。pid 文件被改成别的进程时拒绝操作，不会误杀。
 - 端口被占用时报告冲突，不杀进程、不自动换端口。配置里的 `protectedPorts` 同样拒绝。
 - `0.0.0.0` 是监听地址，不是浏览地址。本机用 `http://localhost:8000/`，其他设备用主机 IP 或 Tailscale 名。跨设备可达性要实际验证，不因此自动修改防火墙或端口转发。
+
+## 开机自启
+
+`install-service` 只登记启动项，不替你启动，避免和已经用 `start` 跑着的服务抢端口；`uninstall-service` 移除启动项并停止它管理的服务。两者都支持 `--dry-run`。
+
+| 平台 | 启动项 | 执行的命令 | 说明 |
+| --- | --- | --- | --- |
+| Linux | systemd 用户单元 `~/.config/systemd/user/vinx-docs.service` | `vinx-docs serve`，家目录写在 `Environment=` | `Restart=on-failure`；注销后仍运行需要 linger |
+| macOS | `~/Library/LaunchAgents/vinx-docs.plist` | `vinx-docs serve`，家目录写在 `EnvironmentVariables` | 用 `launchctl load -w` 登记 |
+| Windows | `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` 的 `vinx-docs` 值 | `"<程序>" --home "<家目录>" start` | 当前用户登录时运行，不需要管理员权限 |
+
+Windows 执行的是 `start` 而不是 `serve`：`start` 在后台拉起不带窗口的服务后自己退出，登录后不会留下控制台窗口，之后可以照常用 `vinx-docs status/stop/restart` 管理。已知限制：
+
+- `vinx-docs.exe` 是控制台程序，登录时可能闪一下窗口。
+- 没有崩溃自动重启，服务意外退出后要手动 `vinx-docs start` 或重新登录。
+- 用户登录后才运行；开机但没人登录时不运行。
+- 启动项里记的是登记时的程序路径，移动或改名程序后要重新执行 `install-service`。
+
+检查是否已登记：`reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v vinx-docs`，也可以在「任务管理器 → 启动应用」里看到。设计取舍见 [specs/0001-windows-autostart.md](specs/0001-windows-autostart.md)。
 
 ## 家目录
 

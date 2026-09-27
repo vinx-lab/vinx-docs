@@ -12,11 +12,14 @@ import (
 	"github.com/vinx-lab/vinx-docs/internal/textutil"
 )
 
-// ServiceName 是 systemd 单元 / launchd 标签名。
+// ServiceName 是 systemd 单元 / launchd 标签名，也是 Windows 登录启动项的值名。
 const ServiceName = "vinx-docs"
 
+// WindowsRunKey 是 Windows 当前用户的登录启动项（相对 HKEY_CURRENT_USER）。
+const WindowsRunKey = `Software\Microsoft\Windows\CurrentVersion\Run`
+
 var serviceHelp = map[string]string{
-	"install-service":   "登记开机自动启动（Linux systemd 用户单元 / macOS launchd；Windows 给出任务计划程序命令）。",
+	"install-service":   "登记开机自动启动（Linux systemd 用户单元 / macOS launchd / Windows 当前用户的登录启动项）。",
 	"uninstall-service": "移除开机自动启动，并停止由它管理的服务。",
 }
 
@@ -59,6 +62,50 @@ func SystemdUnit(home string, command []string) string {
 	}
 	lines = append(lines, "ExecStart="+strings.Join(parts, " "), "Restart=on-failure", "", "[Install]", "WantedBy=default.target", "")
 	return strings.Join(lines, "\n")
+}
+
+// windowsQuote 按 Windows 命令行的解析规则（CommandLineToArgvW）给参数加引号，与 syscall.EscapeArg 相同。
+func windowsQuote(value string) string {
+	if value == "" {
+		return `""`
+	}
+	if !strings.ContainsAny(value, " \t\"") {
+		return value
+	}
+	var b strings.Builder
+	b.WriteByte('"')
+	slashes := 0
+	for _, r := range value {
+		switch r {
+		case '\\':
+			slashes++
+		case '"':
+			b.WriteString(strings.Repeat(`\`, slashes+1))
+			slashes = 0
+		default:
+			slashes = 0
+		}
+		b.WriteRune(r)
+	}
+	b.WriteString(strings.Repeat(`\`, slashes))
+	b.WriteByte('"')
+	return b.String()
+}
+
+// WindowsRunCommand 生成写进 Windows 登录启动项的命令行：用 start 在后台拉起服务后退出，不留控制台窗口；
+// 家目录（以及 --assets 指定的资源目录）用全局参数写在命令行里，不依赖系统环境变量。
+func WindowsRunCommand(home, program string) string {
+	parts := []string{program, "--home", home}
+	for _, pair := range serviceEnv(home) {
+		if pair[0] == "VINX_DOCS_ASSETS" {
+			parts = append(parts, "--assets", pair[1])
+		}
+	}
+	parts = append(parts, "start")
+	for i, part := range parts {
+		parts[i] = windowsQuote(part)
+	}
+	return strings.Join(parts, " ")
 }
 
 func xmlEscape(value string) string {
@@ -193,12 +240,32 @@ func service(action, home string, extra []string) int {
 		fmt.Fprintf(stdout, "已写入 %s。登记并启动：vinx-docs stop && launchctl load -w %s\n", plist, plist)
 		return 0
 	}
-	quoted := make([]string, len(command))
-	for i, part := range command {
-		quoted[i] = `"` + part + `"`
+	// Windows：写当前用户的 Run 值，不需要管理员权限。
+	runKey := `HKEY_CURRENT_USER\` + WindowsRunKey
+	value := WindowsRunCommand(home, command[0])
+	if dryRun {
+		if action == "uninstall-service" {
+			fmt.Fprintf(stdout, "将删除注册表值 %s\\%s，并停止由 start 启动的服务\n", runKey, ServiceName)
+			return 0
+		}
+		fmt.Fprintf(stdout, "将写入注册表值 %s\\%s：\n%s\n", runKey, ServiceName, value)
+		return 0
 	}
-	fmt.Fprintln(stdout, "Windows 请用「任务计划程序」登记登录时运行，例如：")
-	fmt.Fprintf(stdout, "schtasks /Create /SC ONLOGON /TN %s /TR \"%s\"\n", ServiceName, strings.Join(quoted, " "))
-	fmt.Fprintf(stdout, "并在系统环境变量里设置 VINX_DOCS_HOME=%s\n", home)
+	if action == "uninstall-service" {
+		if err := deleteRunValue(ServiceName); err != nil {
+			return fail(err)
+		}
+		fmt.Fprintf(stdout, "已移除登录启动项 %s\\%s\n", runKey, ServiceName)
+		code, err := server.Manage(home, "stop")
+		if err != nil {
+			return fail(err)
+		}
+		return code
+	}
+	if err := setRunValue(ServiceName, value); err != nil {
+		return fail(err)
+	}
+	fmt.Fprintf(stdout, "已写入登录启动项 %s\\%s，下次登录自动启动：\n%s\n", runKey, ServiceName, value)
+	fmt.Fprintln(stdout, "现在就启动：vinx-docs start")
 	return 0
 }
