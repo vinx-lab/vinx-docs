@@ -9,7 +9,7 @@
   document.body.append(floating);
 
   const reader = () => window.DocsifyXReader;
-  const target = () => 'doc:' + reader().meta.id + '/' + reader().source();
+  const target = () => (reader().meta.target || 'doc:' + reader().meta.id + '/') + reader().source();
 
   // 正文里的文字节点及其在整段文字里的起点；批注的原文、上下文都按这个坐标算。
   function textIndex(root) {

@@ -562,6 +562,48 @@ func TestArtifactShortLinks(t *testing.T) {
 	}
 }
 
+func TestMarkdownShortLinks(t *testing.T) {
+	tool := makeTool(t)
+	writeFile(t, filepath.Join(tool, "web", "read.html"), "<html>read</html>")
+	writeFile(t, filepath.Join(tool, "web", "published.html"), "<html>published</html>")
+	f := startServer(t, tool)
+	doc := filepath.Join(testutil.TempDir(t), "doc")
+	writeFile(t, filepath.Join(doc, "plan.md"), "# 方案\n\n![图](a.png)\n")
+	writeFile(t, filepath.Join(doc, "a.png"), "png")
+	record, _, err := pages.Publish(pages.DefaultRegistry(f.tool), filepath.Join(doc, "plan.md"), "", nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := pages.Str(record, "id")
+	// 短链接跳到站点的单文件阅读页；Markdown 原文和清单仍从短链接取。
+	if r := f.get("/a/"+id+"/", nil); r.status != 302 || r.headers.Get("Location") != "/read.html?a="+id {
+		t.Fatal(r.status, r.headers)
+	}
+	if r := f.get("/a/"+id+"/plan.md", nil); r.status != 200 || !strings.HasPrefix(r.headers.Get("Content-Type"), "text/plain") {
+		t.Fatal(r.status, r.headers)
+	}
+	manifest := f.get("/a/"+id+"/"+pages.ReservedDir+"/manifest", nil).json(t)
+	if manifest["home"] != "plan.md" || manifest["target"] != "a:"+id+"/" || len(manifest["entries"].([]any)) != 2 ||
+		manifest["versionUrl"] != "/a/"+id+"/"+pages.ReservedDir+"/version" {
+		t.Fatal(manifest)
+	}
+	// 阅读页只多允许被本站嵌入；其他站点页面仍然禁止被嵌入。先接入一个项目，触发站点构建。
+	if r := f.post("/api/projects", map[string]any{"docsPath": setupSource(t, testutil.TempDir(t))}, nil); r.status != 200 {
+		t.Fatal(string(r.body))
+	}
+	if r := f.get("/read.html", nil); r.status != 200 || !strings.Contains(r.headers.Get("Content-Security-Policy"), "frame-ancestors 'self'") ||
+		!strings.Contains(r.headers.Get("Content-Security-Policy"), "script-src 'self';") {
+		t.Fatal(r.status, r.headers)
+	}
+	if r := f.get("/published.html", nil); !strings.Contains(r.headers.Get("Content-Security-Policy"), "frame-ancestors 'none'") {
+		t.Fatal(r.headers)
+	}
+	item := f.get("/api/artifacts", nil).json(t)["artifacts"].([]any)[0].(map[string]any)
+	if item["kind"] != "markdown" || item["readUrl"] != "/read.html?a="+id {
+		t.Fatal(item)
+	}
+}
+
 func TestKeepAliveAndPostCloses(t *testing.T) {
 	f := startServer(t, makeTool(t))
 	conn, err := net.Dial("tcp", f.addr)

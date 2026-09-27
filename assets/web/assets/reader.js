@@ -1,5 +1,9 @@
 (async function () {
   const base = location.pathname.replace(/index\.html$/, '').replace(/\/?$/, '/');
+  // read.html?a=<短码>：用短链接发布的单个 Markdown，清单和内容都从短链接取。
+  const shortId = new URLSearchParams(location.search).get('a');
+  if (shortId) document.body.classList.add('single-doc');
+  const manifestUrl = shortId ? '/a/' + encodeURIComponent(shortId) + '/__docsify_x/manifest' : base + 'manifest.json';
   const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const loaded = new Map();
   function loadScript(src) {
@@ -191,12 +195,12 @@
   }
 
   try {
-    const response = await fetch(base + 'manifest.json', { cache: 'no-store' });
+    const response = await fetch(manifestUrl, { cache: 'no-store' });
     if (!response.ok) throw new Error('未找到有效项目清单，请检查注册和刷新结果。');
     const meta = await response.json();
     document.title = meta.name + ' · Vinx Docs';
     document.getElementById('project-label').textContent = meta.name;
-    watchUpdates(base + 'manifest.json', meta.version);
+    watchUpdates(meta.versionUrl || manifestUrl, meta.version);
     let source = meta.home;
 
     const searchInput = document.getElementById('reader-search-input');
@@ -231,8 +235,8 @@
 
     window.$docsify = {
       // 项目名指向本项目首页：进了项目就是一个独立空间，返回主站走顶栏的“文档中心”。
-      name: escape(meta.name), nameLink: '#/', basePath: base + 'content/', homepage: meta.home,
-      loadSidebar: true, alias: { '/.*/_sidebar.md': '/_sidebar.md' },
+      name: escape(meta.name), nameLink: '#/', basePath: meta.content || base + 'content/', homepage: meta.home,
+      loadSidebar: !shortId, alias: { '/.*/_sidebar.md': '/_sidebar.md' },
       subMaxLevel: 3, auto2top: true, executeScript: false, externalLinkTarget: '_blank',
       notFoundPage: false, themeColor: '#176b79',
       search: { paths: meta.entries.filter(e => e.route).map(e => '/' + e.route), namespace: 'docsify-x-' + meta.id + '-' + meta.version, placeholder: '搜索当前项目', noData: '未找到匹配内容', depth: 4, maxAge: 86400000 },
@@ -245,7 +249,8 @@
           try { route = decodeURIComponent(vm.route.path).replace(/^\//, '') || meta.home; } catch (_) { route = meta.home; }
           const entry = meta.entries.find(e => e.route === route || e.route === route + '.md');
           source = entry ? entry.path : meta.home;
-          return content;
+          // 开头的 front matter（--- 包起来的 YAML）显示成代码块，不被当成分隔线和标题。
+          return content.replace(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/, (_, yaml) => '```yaml\n' + yaml + '\n```\n\n');
         });
         hook.doneEach(function () {
           const section = document.querySelector('.markdown-section');

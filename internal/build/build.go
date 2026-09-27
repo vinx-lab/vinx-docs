@@ -427,7 +427,7 @@ func scopePage(project *ojson.Object, roots []config.Root, entryCount int, skipp
 // copyStatic 复制首页、后台等外壳页面、assets 和校验过的 vendor。
 func copyStatic(stage, toolRoot string, cfg *ojson.Object, vendorRoot string) error {
 	assets := AssetsRoot(toolRoot)
-	for _, name := range []string{"index.html", "admin.html", "published.html", "comments.html"} {
+	for _, name := range []string{"index.html", "admin.html", "published.html", "comments.html", "read.html"} {
 		if assets.isFile("web/" + name) {
 			if err := assets.copyFile("web/"+name, filepath.Join(stage, name)); err != nil {
 				return err

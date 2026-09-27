@@ -2,6 +2,11 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循语义化版本。
 
+## [Unreleased]
+
+- `publish` 支持 Markdown 入口：短链接打开单文件阅读页，渲染同文档阅读页，批注和编辑写回源文件；自动收引用的图片。见 [spec 0002](https://github.com/vinx-lab/vinx-docs/blob/main/docs/specs/0002-publish-markdown.md)。
+- 阅读页把开头的 front matter 显示为代码块，不再渲染成分隔线和标题。
+
 ## [0.2.1] - 2026-09-27
 
 - 首页和管理后台的顶栏显示版本号；`/api/status` 增加 `version` 字段。

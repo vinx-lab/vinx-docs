@@ -12,6 +12,8 @@
   const editSelect = document.getElementById('edit-file');
   const editButton = document.getElementById('edit-source');
   const EDITABLE = /\.(html?|css|m?js|json|svg|md|markdown|txt|xml|ya?ml|csv)$/i;
+  // HTML 页面在沙箱里预览，批注和编辑在外层；Markdown 用站点自己的阅读页预览（自带批注和编辑，内容受站点 CSP 约束）。
+  const HTML_SANDBOX = frame.getAttribute('sandbox');
   const params = new URLSearchParams(location.search);
   let items = [];
   let selected = decodeURIComponent(location.hash.slice(1));
@@ -99,20 +101,23 @@
   function show() {
     const item = items.find(entry => entry.id === selected);
     frame.hidden = !item; empty.hidden = !!item; openNew.hidden = !item;
-    pickButton.hidden = commentToggle.hidden = editButton.hidden = !item;
+    const markdown = item && item.kind === 'markdown';
+    pickButton.hidden = commentToggle.hidden = editButton.hidden = !item || markdown;
     currentTitle.textContent = item ? item.title : '';
     followNote.textContent = follow ? '有新页面发布时自动切换到最新一个' : '已固定在所选页面；点第一项恢复跟随最新';
     if (!item) return;
-    openNew.href = item.url;
+    openNew.href = markdown ? item.readUrl : item.url;
     // 同一次发布只加载一次；内容变化由页面里的自动刷新脚本处理，重新发布才换地址。
     const key = item.id + ':' + item.publishedAt;
     if (key !== shownKey) {
       const switched = !shownKey.startsWith(item.id + ':');
-      shownKey = key; framePage = ''; frame.src = item.url;
+      shownKey = key; framePage = '';
+      if (markdown) frame.removeAttribute('sandbox'); else frame.setAttribute('sandbox', HTML_SANDBOX);
+      frame.src = markdown ? item.readUrl : item.url;
       const editable = (item.files || []).filter(file => EDITABLE.test(file));
       editSelect.replaceChildren(...editable.map(file => { const option = document.createElement('option'); option.value = option.textContent = file; return option; }));
       editSelect.value = item.entry;
-      editSelect.hidden = editable.length < 2; editButton.hidden = !editable.length;
+      editSelect.hidden = markdown || editable.length < 2; editButton.hidden = markdown || !editable.length;
       if (switched) comments.refresh();
     }
     if (location.hash.slice(1) !== item.id) history.replaceState(null, '', location.pathname + location.search + '#' + item.id);
@@ -129,7 +134,7 @@
       const meta = document.createElement('span'); meta.className = 'recent-meta';
       meta.textContent = item.root.replace(/^\/home\/[^/]+/, '~') + '/' + item.entry;
       const time = document.createElement('span'); time.className = 'published-time';
-      time.textContent = relative(item.publishedAt) + ' 发布' + (item.missing.length ? ' · 缺失 ' + item.missing.length + ' 个文件' : '');
+      time.textContent = (item.kind === 'markdown' ? 'Markdown · ' : '') + relative(item.publishedAt) + ' 发布' + (item.missing.length ? ' · 缺失 ' + item.missing.length + ' 个文件' : '');
       if (item.missing.length) time.dataset.state = 'warning';
       link.append(title, meta, time);
       link.addEventListener('click', event => {

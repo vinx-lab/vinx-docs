@@ -41,6 +41,9 @@ const (
 	PreviewPolicy = "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; " +
 		"base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
 	RawPolicy = "sandbox; default-src 'none'; base-uri 'none'"
+	// ReaderPolicy 给单文件阅读页：同站点策略，只多允许被本站嵌入（页面列表里预览 Markdown）。
+	ReaderPolicy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+		"connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
 )
 
 var projectArea = regexp.MustCompile(`^/projects/[a-z0-9-]+/(preview|raw|content)/`)
@@ -387,7 +390,11 @@ func (q *request) serveStatic(rawPath string) {
 		if contentType == "" {
 			contentType = "application/octet-stream"
 		}
-		headers = append(headers, "Content-Security-Policy", SitePolicy)
+		policy := SitePolicy
+		if path == "/read.html" {
+			policy = ReaderPolicy
+		}
+		headers = append(headers, "Content-Security-Policy", policy)
 	}
 	file, err := os.Open(target)
 	if err != nil {
@@ -489,6 +496,11 @@ func (q *request) serveArtifact(path string) {
 		return
 	}
 	rel := textutil.Unquote(parts[3])
+	if rel == "" && pages.IsMarkdown(pages.Str(record, "entry")) {
+		// Markdown 在站点的单文件阅读页里渲染（站点 CSP，可以批注和编辑）；链接仍然是短链接。
+		q.sendPage(302, nil, plain, "Location", pages.ReadURL(id))
+		return
+	}
 	if rel == "" {
 		entry := pages.Str(record, "entry")
 		if strings.Contains(entry, "/") {
@@ -496,6 +508,10 @@ func (q *request) serveArtifact(path string) {
 			return
 		}
 		rel = entry
+	}
+	if rel == pages.ReservedDir+"/manifest" {
+		q.sendPage(200, []byte(ojson.DumpsASCII(pages.ReaderManifest(record), -1)), "application/json; charset=utf-8")
+		return
 	}
 	if rel == pages.ReservedDir+"/version" {
 		q.sendPage(200, []byte(ojson.DumpsASCII(ojson.NewObject("version", pages.Version(record)), -1)), "application/json; charset=utf-8")

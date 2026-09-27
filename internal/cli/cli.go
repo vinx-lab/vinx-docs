@@ -47,7 +47,7 @@ var groups = []group{
 		{"settings", "修改自动同步等设置"},
 	}},
 	{"页面", "pages", [][2]string{
-		{"publish", "发布一个本地 HTML 页面，得到短链接"},
+		{"publish", "发布一个本地 HTML 页面或 Markdown 文件，得到短链接"},
 		{"unpublish", "取消一个短链接，不删源文件"},
 		{"artifacts", "列出已发布的页面"},
 	}},
@@ -303,7 +303,7 @@ func coreMain(args []string) int {
 func pagesParser() *Parser {
 	p := &Parser{Prog: "vinx-docs", Args: []*Arg{{Flag: "--registry", Dest: "registry", Type: "path"}}}
 	p.Sub("publish",
-		&Arg{Dest: "entry", Type: "path", Help: "入口 .html 文件"},
+		&Arg{Dest: "entry", Type: "path", Help: "入口 .html 或 .md 文件"},
 		&Arg{Flag: "--root", Dest: "root", Type: "path", Help: "文件清单的根目录，默认是入口页所在目录"},
 		&Arg{Flag: "--file", Dest: "file", Action: "append", Help: "额外发布的文件（相对根目录），可重复"},
 		&Arg{Flag: "--title", Dest: "title"},

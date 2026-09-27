@@ -63,6 +63,60 @@ func mapObj(m map[string]string) *ojson.Object {
 	return o
 }
 
+func TestPublishMarkdownCollectsImagesOnly(t *testing.T) {
+	base := tu.TempDir(t)
+	doc := filepath.Join(base, "doc")
+	tu.Write(t, filepath.Join(doc, "plan.md"), "前言\n\n# 方案 A\n\n![图](img/a.png) ![带标题](<img/b c.png> \"t\")\n"+
+		"<img src=\"img/c.png\" srcset=\"img/d.png 2x\">\n[另一篇](other.md) [附件](data.xlsx) ![外部](https://x.example/e.png)\n"+
+		"代码里的不算：`![x](img/no1.png)`\n\n```md\n![y](img/no2.png)\n```\n")
+	for _, name := range []string{"img/a.png", "img/b c.png", "img/c.png", "img/d.png", "other.md", "data.xlsx"} {
+		tu.Write(t, filepath.Join(doc, filepath.FromSlash(name)), "x")
+	}
+	registry := filepath.Join(base, "reg.json")
+	record, notes, err := Publish(registry, filepath.Join(doc, "plan.md"), "", nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if record.Value("title") != "方案 A" || record.Value("entry") != "plan.md" {
+		t.Fatal(ojson.Dumps(record, -1))
+	}
+	// 只收图片；链接到的其他 Markdown 和附件不自动收。
+	if got := sorted(Files(record)); got != sorted([]string{"plan.md", "img/a.png", "img/b c.png", "img/c.png", "img/d.png"}) {
+		t.Fatal(got)
+	}
+	if joined := strings.Join(notes, "\n"); !strings.Contains(joined, "外部地址") || strings.Contains(joined, "no1") || strings.Contains(joined, "no2") {
+		t.Fatal(notes)
+	}
+	withExtra, _, err := Publish(registry, filepath.Join(doc, "plan.md"), "", []string{"other.md", "data.xlsx"}, "")
+	if err != nil || Str(withExtra, "id") != Str(record, "id") {
+		t.Fatal(err, ojson.Dumps(withExtra, -1))
+	}
+	manifest := ReaderManifest(withExtra)
+	id := Str(record, "id")
+	if manifest.Value("home") != "plan.md" || manifest.Value("target") != "a:"+id+"/" || manifest.Value("content") != "/a/"+id+"/" {
+		t.Fatal(ojson.Dumps(manifest, -1))
+	}
+	kinds := map[string]string{}
+	for _, item := range manifest.Value("entries").([]any) {
+		entry := item.(*ojson.Object)
+		kind := Str(entry, "kind")
+		if Str(entry, "route") != "" {
+			kind = "route"
+		}
+		kinds[Str(entry, "path")] = kind
+	}
+	if kinds["plan.md"] != "route" || kinds["other.md"] != "route" || kinds["img/a.png"] != "image" || kinds["data.xlsx"] != "download" {
+		t.Fatal(kinds)
+	}
+	if s := Summary(withExtra); s.Value("kind") != "markdown" || s.Value("readUrl") != "/read.html?a="+id {
+		t.Fatal(ojson.Dumps(s, -1))
+	}
+	tu.Write(t, filepath.Join(doc, "notes.txt"), "x")
+	if _, _, err := Publish(registry, filepath.Join(doc, "notes.txt"), "", nil, ""); err == nil || !strings.Contains(err.Error(), ".html或.md") {
+		t.Fatal(err)
+	}
+}
+
 func TestRepublishKeepsShortIDAndPicksUpNewFiles(t *testing.T) {
 	base := tu.TempDir(t)
 	page := tu.MakePage(t, filepath.Join(base, "proto"))
@@ -130,8 +184,8 @@ func TestPublishRejectsEscapesAndSensitiveFiles(t *testing.T) {
 	os.Symlink(filepath.Join(base, "real"), filepath.Join(page, "link"))
 	_, _, err = Publish(registry, entry, "", []string{"link/p.png"}, "")
 	expectError(t, err, "符号链接")
-	tu.Write(t, filepath.Join(page, "notes.md"), "# x")
-	_, _, err = Publish(registry, filepath.Join(page, "notes.md"), "", nil, "")
+	tu.Write(t, filepath.Join(page, "notes.txt"), "x")
+	_, _, err = Publish(registry, filepath.Join(page, "notes.txt"), "", nil, "")
 	expectError(t, err, ".html")
 }
 

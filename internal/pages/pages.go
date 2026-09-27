@@ -40,6 +40,15 @@ const PagePolicy = "sandbox allow-scripts allow-forms allow-popups allow-modals 
 
 var pageSuffixes = map[string]bool{".html": true, ".htm": true}
 
+// markdownSuffixes 是可以作为入口的 Markdown 文件；这类发布在站点的单文件阅读页里渲染。
+var markdownSuffixes = map[string]bool{".md": true, ".markdown": true}
+
+// IsMarkdown 报告文件是否按 Markdown 处理。
+func IsMarkdown(rel string) bool { return markdownSuffixes[textutil.Lower(textutil.Suffix(rel))] }
+
+// ReadURL 是 Markdown 发布的阅读页地址。
+func ReadURL(id string) string { return "/read.html?a=" + id }
+
 // MimeTypes 是短链接页面按扩展名返回的 Content-Type。
 var MimeTypes = map[string]string{
 	".html": "text/html; charset=utf-8", ".htm": "text/html; charset=utf-8",
@@ -222,6 +231,10 @@ var (
 	jsURLRE   = regexp.MustCompile(`(?s)\Anew` + space + `+URL` + space + `*\(` + space + `*(?:"([^"'\n]+)"|'([^"'\n]+)')`)
 	schemeRE  = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9+.-]*:`)
 	titleRE   = regexp.MustCompile(`(?is)<title[^>]*>(.*?)</title>`)
+	// Markdown 图片 ![说明](地址 "标题")，地址可以用 <> 包起来。
+	mdImageRE   = regexp.MustCompile(`!\[[^\]]*\]\(\s*(?:<([^>]+)>|([^)\s]+))`)
+	mdHeadingRE = regexp.MustCompile(`(?m)^#\s+(.+?)\s*#*\s*$`)
+	mdCodeRE    = regexp.MustCompile("(?ms)^(```|~~~).*?^(```|~~~)[^\n]*$|`[^`\n]*`")
 )
 
 // boundaryAt 判断 text[pos] 处是否是词边界（按 Unicode 词字符）。
@@ -306,6 +319,34 @@ func references(path string) []string {
 		return nil
 	}
 	var found []string
+	if markdownSuffixes[suffix] {
+		// 只收图片（Markdown 语法和内嵌的 <img>/<source>）；链接到的其他文件不自动收，避免扩大发布范围。
+		// 代码块和行内代码里的内容不是引用，先去掉。
+		text = mdCodeRE.ReplaceAllString(text, "")
+		for _, m := range mdImageRE.FindAllStringSubmatch(text, -1) {
+			found = append(found, m[1]+m[2])
+		}
+		for _, tag := range htmlTags(text) {
+			if name := strings.ToLower(tag.name); name != "img" && name != "source" {
+				continue
+			}
+			scanAnchored(tag.attrs, htmlRefRE, true, func(loc []int, sub string) {
+				if attr := strings.ToLower(sub[loc[2]:loc[3]]); attr == "src" || attr == "srcset" {
+					value := groupValue(sub, loc, 2)
+					if attr == "srcset" {
+						for _, part := range strings.Split(value, ",") {
+							if fields := textutil.SplitWhitespace(textutil.Strip(part)); len(fields) > 0 {
+								found = append(found, fields[0])
+							}
+						}
+						return
+					}
+					found = append(found, value)
+				}
+			})
+		}
+		return found
+	}
 	if pageSuffixes[suffix] {
 		for _, tag := range htmlTags(text) {
 			scanAnchored(tag.attrs, htmlRefRE, true, func(loc []int, sub string) {
@@ -457,7 +498,11 @@ func pageTitle(entry string) string {
 	}
 	text = textutil.Head(text, 65536)
 	title := ""
-	if m := titleRE.FindStringSubmatch(text); m != nil {
+	re := titleRE
+	if IsMarkdown(entry) {
+		re = mdHeadingRE
+	}
+	if m := re.FindStringSubmatch(text); m != nil {
 		title = textutil.Strip(textutil.CollapseSpace(m[1]))
 	}
 	title = textutil.Head(title, 120)
@@ -494,8 +539,8 @@ func Publish(registry, entry, root string, extra []string, title string) (*ojson
 	if err != nil {
 		return nil, nil, err
 	}
-	if !pageSuffixes[textutil.Lower(textutil.Suffix(entryPath))] || !textutil.IsFile(entryPath) {
-		return nil, nil, config.Errorf("入口页必须是存在的.html文件: %s", entryPath)
+	if suffix := textutil.Lower(textutil.Suffix(entryPath)); !(pageSuffixes[suffix] || markdownSuffixes[suffix]) || !textutil.IsFile(entryPath) {
+		return nil, nil, config.Errorf("入口页必须是存在的.html或.md文件: %s", entryPath)
 	}
 	if root == "" {
 		root = textutil.Parent(entryPath)
@@ -621,8 +666,12 @@ func Summary(record *ojson.Object) *ojson.Object {
 		}
 	}
 	id := Str(record, "id")
+	kind, readURL := "html", ""
+	if IsMarkdown(Str(record, "entry")) {
+		kind, readURL = "markdown", ReadURL(id)
+	}
 	return ojson.NewObject(
-		"id", id, "title", record.Value("title"), "url", "/a/"+id+"/",
+		"id", id, "title", record.Value("title"), "url", "/a/"+id+"/", "kind", kind, "readUrl", readURL,
 		"root", record.Value("root"), "entry", record.Value("entry"), "fileCount", len(Files(record)),
 		"files", record.Value("files"), "missing", missing, "createdAt", record.Value("createdAt"),
 		"publishedAt", record.Value("publishedAt"), "modifiedAt", modified,
@@ -649,6 +698,40 @@ func Listing(registry string) ([]any, error) {
 		out[i] = item
 	}
 	return out, nil
+}
+
+// ReaderManifest 是单文件阅读页用的清单，格式与文档项目的 manifest.json 相同：
+// Markdown 文件可在阅读页里切换，图片内嵌，HTML 在新窗口打开，其余文件下载。
+func ReaderManifest(record *ojson.Object) *ojson.Object {
+	id := Str(record, "id")
+	base := "/a/" + id + "/"
+	entries := []any{}
+	for _, rel := range Files(record) {
+		url := base + textutil.Quote(rel, "/")
+		entry := ojson.NewObject("path", rel)
+		switch mime := MimeFor(rel); {
+		case IsMarkdown(rel):
+			title := textutil.Stem(rel)
+			if rel == Str(record, "entry") {
+				title = Str(record, "title")
+			}
+			entry.Set("route", rel)
+			entry.Set("title", title)
+		case strings.HasPrefix(mime, "image/"):
+			entry.Set("kind", "image")
+			entry.Set("url", url)
+		case strings.HasPrefix(mime, "text/html"):
+			entry.Set("kind", "html")
+			entry.Set("previewUrl", url)
+		default:
+			entry.Set("kind", "download")
+			entry.Set("url", url)
+		}
+		entries = append(entries, entry)
+	}
+	return ojson.NewObject("id", "a-"+id, "name", record.Value("title"), "home", record.Value("entry"),
+		"version", Version(record), "target", "a:"+id+"/", "content", base, "versionUrl", base+ReservedDir+"/version",
+		"entries", entries)
 }
 
 // InjectLive 在最后一个 </body> 前插入自动刷新脚本；data-page 告诉页面自己是清单里的哪个文件。

@@ -97,7 +97,8 @@ SheetJS 在 npm 上停留在 0.18.5 且有已知 CVE，官方发布已迁至 cdn
 | `/projects/<id>/preview/` | 项目里的 HTML 报告：`sandbox`，不允许脚本 |
 | `/projects/<id>/raw/` | 原件下载：`Content-Disposition: attachment` + `sandbox` |
 | `/projects/<id>/content/` | 一律 `text/plain` |
-| `/a/<短码>/` | 页面短链接：只有一条沙箱策略（允许脚本、origin 为 null），不叠加站点策略 |
+| `/a/<短码>/` | 页面短链接：只有一条沙箱策略（允许脚本、origin 为 null），不叠加站点策略；入口是 Markdown 时重定向到 `/read.html?a=<短码>` |
+| `/read.html` | 单文件阅读页：同站点策略，只把 `frame-ancestors` 放宽为 `'self'`，供页面列表嵌入预览 |
 
 所有响应都带 `X-Content-Type-Options: nosniff` 和 `Referrer-Policy: no-referrer`。任何以 `.` 开头的路径段、目录穿越和不存在的文件都返回 404，不兜底成首页；没有目录列表。静态文件带 ETag，重复访问返回 304。
 

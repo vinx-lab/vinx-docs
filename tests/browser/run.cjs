@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 对一个编译好的 vinx-docs 二进制跑全部真实浏览器测试：阅读页（browser.cjs）、
-// 短链接/批注/编辑（vinx.cjs）、后台接入与同步（control-browser.cjs）。
+// 短链接/批注/编辑（vinx.cjs）、Markdown 短链接（markdown.cjs）、后台接入与同步（control-browser.cjs）。
 //
 // 用法：
 //   PLAYWRIGHT_MODULE=<playwright-core 模块目录> \
@@ -164,6 +164,14 @@ function pageFixture() {
   return path.join(page, 'index.html');
 }
 
+function markdownFixture() {
+  const doc = path.join(WORK, 'markdown');
+  write(path.join(doc, 'plan.md'), '# Markdown 方案\n\n![示意](a.png)\n\n```mermaid\ngraph LR\n  A --> B\n```\n\n见[另一篇](other.md)。\n');
+  write(path.join(doc, 'other.md'), '# 不在清单里\n');
+  write(path.join(doc, 'a.png'), fs.readFileSync(path.join(WORK, 'page', 'a.png')));
+  return path.join(doc, 'plan.md');
+}
+
 async function main() {
   const results = [];
   const record = (name, code, output) => results.push({ name, code, output });
@@ -185,6 +193,17 @@ async function main() {
     } else {
       const vinx = await runNode(path.join(HERE, 'vinx.cjs'), [base, info.id, OUT]);
       record(`tests/browser/vinx.cjs（短链接/批注/编辑，publish 退出码 ${publish.status}）`, vinx.code, vinx.output);
+    }
+
+    const markdown = markdownFixture();
+    const md = spawnSync(binary, ['publish', markdown, '--json'], { cwd: WORK, env: envFor(readerHome), encoding: 'utf8' });
+    let mdInfo = null;
+    try { mdInfo = JSON.parse(md.stdout); } catch { /* 下面报告 */ }
+    if (!mdInfo || !mdInfo.id) {
+      record('tests/browser/markdown.cjs（Markdown 短链接）', 1, `publish 失败（退出码 ${md.status}）\n${md.stdout}\n${md.stderr}`);
+    } else {
+      const result = await runNode(path.join(HERE, 'markdown.cjs'), [base, mdInfo.id, markdown, OUT]);
+      record(`tests/browser/markdown.cjs（Markdown 短链接，publish 退出码 ${md.status}）`, result.code, result.output);
     }
   } catch (error) {
     record('阅读服务', 1, String(error && error.message || error));

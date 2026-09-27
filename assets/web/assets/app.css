@@ -490,3 +490,7 @@ body.published .vinx-editor.docked{top:57px}
 .settings-form .field-row input{width:140px}
 .comments-hint{margin-top:16px}
 .hub .comments-hint + .vinx-agents{margin:4px 0 20px}
+
+/* ---- 单文件阅读页（Markdown 短链接）：只有一篇文档，不要侧栏 ---- */
+.reader.single-doc .sidebar,.reader.single-doc .sidebar-toggle{display:none}
+.reader.single-doc .content{left:0}

@@ -36,7 +36,7 @@ func TestHelpAndErrorsAreStable(t *testing.T) {
                          entry
 
 positional arguments:
-  entry          入口 .html 文件
+  entry          入口 .html 或 .md 文件
 
 options:
   -h, --help     show this help message and exit
