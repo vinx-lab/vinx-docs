@@ -7,6 +7,8 @@
   const floating = document.createElement('button');
   floating.type = 'button'; floating.className = 'vinx-select-btn'; floating.textContent = '批注'; floating.hidden = true;
   document.body.append(floating);
+  // 按下按钮时不让浏览器清掉选区、抢走焦点，点击后焦点才能稳定落到批注输入框。
+  floating.addEventListener('mousedown', event => event.preventDefault());
 
   const reader = () => window.DocsifyXReader;
   const target = () => (reader().meta.target || 'doc:' + reader().meta.id + '/') + reader().source();

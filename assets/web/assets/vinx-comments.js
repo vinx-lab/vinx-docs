@@ -174,7 +174,9 @@
       pending = { target, anchor };
       composeAnchor.textContent = label;
       compose.hidden = false; setOpen(true);
+      // 抽屉刚显示时有的浏览器会忽略这次聚焦，下一帧再补一次。
       composeText.focus();
+      requestAnimationFrame(() => { if (!compose.hidden && document.activeElement !== composeText) composeText.focus(); });
     }
 
     return {

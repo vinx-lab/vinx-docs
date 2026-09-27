@@ -6,6 +6,7 @@
 
 - `publish` 支持 Markdown 入口：短链接打开单文件阅读页，渲染同文档阅读页，批注和编辑写回源文件；自动收引用的图片。见 [spec 0002](https://github.com/vinx-lab/vinx-docs/blob/main/docs/specs/0002-publish-markdown.md)。
 - 阅读页把开头的 front matter 显示为代码块，不再渲染成分隔线和标题。
+- 选中文字点「批注」后，输入框更稳定地自动获得焦点（#2）。
 
 ## [0.2.1] - 2026-09-27
 

@@ -30,7 +30,19 @@ const [base, code, output] = process.argv.slice(2);
     await Promise.all([page.waitForEvent('load'), page.locator('.vinx-editor-bar button', { hasText: '关闭' }).click()]);
     await page.waitForFunction(() => document.querySelector('.markdown-section')?.textContent.includes('浏览器编辑追加的一行'));
 
-    // 2. 批注：对整篇文档写一条批注，抽屉里能看到。
+    // 2. 批注：选中正文文字、点浮出的「批注」后，输入框自动获得焦点，可以直接输入。
+    const paragraph = await page.locator('.markdown-section p').first().boundingBox();
+    await page.mouse.move(paragraph.x + 2, paragraph.y + paragraph.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(paragraph.x + 80, paragraph.y + paragraph.height / 2);
+    await page.mouse.up();
+    await page.locator('.vinx-select-btn').click();
+    await page.keyboard.type('直接输入');
+    assert.equal(await page.locator('.vinx-compose textarea').inputValue(), '直接输入');
+    await page.getByRole('button', { name: '取消' }).click();
+    await page.locator('#comment-toggle').click();  // 关上侧栏，下面照常从按钮打开
+
+    // 对整篇文档写一条批注，抽屉里能看到。
     await page.locator('#comment-toggle').click();
     await page.getByRole('button', { name: '对整篇文档写批注' }).click();
     await page.locator('.vinx-compose textarea').fill('浏览器里写的批注');
