@@ -11,7 +11,7 @@
 ```markdown
 ---
 issue: 12          # 没有对应 issue 时删掉这一行
-status: draft      # draft → accepted → done，或 dropped
+status: draft      # draft（写方案中）→ ready（等实现）→ done（已实现），或 dropped（不做）
 ---
 
 # 标题
