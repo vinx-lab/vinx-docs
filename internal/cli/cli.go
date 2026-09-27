@@ -24,7 +24,7 @@ import (
 
 // Version 是程序版本号。scripts/build.sh 用 -ldflags "-X github.com/vinx-lab/vinx-docs/internal/cli.Version=…" 注入，
 // 所以这里是 var；改版本号时改这一行（构建脚本从这里读取默认值）。
-var Version = "0.1.0"
+var Version = "0.2.0"
 
 type group struct {
 	title, module string
@@ -64,7 +64,7 @@ var groups = []group{
 		{"agents", "列出在线 agent"},
 	}},
 	{"其他", "self", [][2]string{
-		{"install-service", "登记开机自动启动（Linux systemd 用户单元 / macOS launchd）"},
+		{"install-service", "登记开机自动启动（Linux systemd / macOS launchd / Windows 登录启动项）"},
 		{"uninstall-service", "移除开机自动启动"},
 		{"home", "显示家目录（配置、站点、批注库所在位置）"},
 	}},

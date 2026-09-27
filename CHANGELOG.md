@@ -2,9 +2,18 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循语义化版本。
 
-## [Unreleased]
+## [0.2.0] - 2026-09-27
 
-- Windows 开机自启：`install-service` 写入当前用户的登录启动项（`HKCU\...\Run`），登录时用 `start` 在后台启动服务，不需要管理员权限；`uninstall-service` 删除启动项并停止服务。以前只打印一条 `schtasks` 命令。
+### 新增
+
+- Windows 开机自启：`install-service` 写入当前用户的登录启动项（`HKCU\...\Run`），登录时用 `start` 在后台启动服务，不需要管理员权限；`uninstall-service` 删除启动项并停止服务。以前只打印一条 `schtasks` 命令。见 [specs/0001](docs/specs/0001-windows-autostart.md)。
+- 推送 `v*` 标签时自动编译 5 个平台并发布 Release；README 增加从 Releases 下载安装的方式。
+
+### 修复
+
+- macOS：登记目录允许经过系统自带的 `/tmp`、`/var`、`/etc` 链接（必须指向 `/private` 下的对应目录），其他符号链接照旧拒绝。
+- Windows：排除 `node_modules` 等缓存目录时不区分大小写，`Node_Modules` 也会被排除。
+- 测试：修正 macOS 临时目录符号链接、Windows 上改名被占用目录导致的偶发失败。
 
 ## [0.1.0] - 2026-09-26
 

@@ -67,7 +67,7 @@ vinx-docs comment: error: argument --json: ignored explicit argument '1'
 		{[]string{"start", "x"}, 2, "", `usage: vinx-docs [-h] {serve,start,stop,status,restart}
 vinx-docs: error: unrecognized arguments: x
 `},
-		{[]string{"--version"}, 0, "0.1.0\n", ""},
+		{[]string{"--version"}, 0, Version + "\n", ""},
 	}
 	for _, c := range cases {
 		code, stdout, stderr := runCLI(t, append([]string{"--home", home}, c.args...)...)
@@ -79,12 +79,12 @@ vinx-docs: error: unrecognized arguments: x
 
 func TestUsageListsEveryCommand(t *testing.T) {
 	code, stdout, _ := runCLI(t)
-	if code != 0 || !strings.HasPrefix(stdout, "vinx-docs 0.1.0 — 本地的 agent 产出审阅台\n") ||
+	if code != 0 || !strings.HasPrefix(stdout, "vinx-docs "+Version+" — 本地的 agent 产出审阅台\n") ||
 		!strings.Contains(stdout, "  uninstall-service 移除开机自动启动\n") || !strings.Contains(stdout, "  start             后台启动服务（先构建站点）\n") {
 		t.Fatal(stdout)
 	}
 	code, _, stderr := runCLI(t, "bogus")
-	if code != 2 || !strings.HasPrefix(stderr, "未知命令：bogus\n\nvinx-docs 0.1.0") {
+	if code != 2 || !strings.HasPrefix(stderr, "未知命令：bogus\n\nvinx-docs "+Version) {
 		t.Fatal(code, stderr)
 	}
 }
