@@ -2,11 +2,18 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循语义化版本。
 
-## [Unreleased]
+## [0.3.0] - 2026-09-27
+
+### 新增
 
 - `publish` 支持 Markdown 入口：短链接打开单文件阅读页，渲染同文档阅读页，批注和编辑写回源文件；自动收引用的图片。见 [spec 0002](https://github.com/vinx-lab/vinx-docs/blob/main/docs/specs/0002-publish-markdown.md)。
+- AGENTS.md 增加 issue 与 agent 的协作约定（`agent:plan` / `agent:ready` / `agent:done` 标签）。
+- vinx-docs skill：补清边界（没覆盖的情况先试再问，改配置的命令只在用户要求时执行），补充挂批注监听的时机，监听时限改为 30 分钟。
+
+### 修复
+
 - 阅读页把开头的 front matter 显示为代码块，不再渲染成分隔线和标题。
-- 选中文字点「批注」后，输入框更稳定地自动获得焦点（#2）。
+- 选词后点「批注」，输入框自动获得焦点（#2）。
 
 ## [0.2.1] - 2026-09-27
 

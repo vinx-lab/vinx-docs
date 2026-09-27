@@ -24,7 +24,7 @@ import (
 
 // Version 是程序版本号。scripts/build.sh 用 -ldflags "-X github.com/vinx-lab/vinx-docs/internal/cli.Version=…" 注入，
 // 所以这里是 var；改版本号时改这一行（构建脚本从这里读取默认值）。
-var Version = "0.2.1"
+var Version = "0.3.0"
 
 type group struct {
 	title, module string
