@@ -370,9 +370,7 @@ func TestConfigSurvivesAVanishedRoot(t *testing.T) {
 		}
 	}
 	renamed := filepath.Join(base, "renamed")
-	if err := os.Rename(gone, renamed); err != nil {
-		t.Fatal(err)
-	}
+	testutil.Rename(t, gone, renamed)
 	cfg := f.get("/api/config", nil).json(t)
 	// 接口返回的路径统一用 / 分隔（Windows 上是 C:/...），这里也换成 / 再查。
 	kept, gone = filepath.ToSlash(kept), filepath.ToSlash(gone)

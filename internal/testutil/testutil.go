@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/vinx-lab/vinx-docs/internal/ojson"
 )
@@ -45,6 +46,23 @@ func Write(t testing.TB, path, content string) {
 	}
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// Rename 改名文件或目录。Windows 上目录里有文件被打开时不能改名，而服务在后台构建、轮询时
+// 会短暂打开登记目录里的文件，所以失败后重试一段时间再报错。
+func Rename(t testing.TB, from, to string) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		err := os.Rename(from, to)
+		if err == nil {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatal(err)
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
