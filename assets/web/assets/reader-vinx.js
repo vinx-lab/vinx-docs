@@ -115,8 +115,9 @@
     floating.hidden = false;
     floating.onclick = () => {
       floating.hidden = true;
-      comments.compose(target(), anchor, '“' + anchor.quote + '”');
+      // 先清掉正文选区再打开批注框：反过来的话，有的浏览器会连输入框里的光标一起清掉，输入框就不再有焦点。
       getSelection().removeAllRanges();
+      comments.compose(target(), anchor, '“' + anchor.quote + '”');
     };
   }
   document.addEventListener('mouseup', event => { if (event.target !== floating) setTimeout(showFloating, 0); });
