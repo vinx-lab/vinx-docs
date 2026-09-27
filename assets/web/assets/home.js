@@ -251,6 +251,7 @@
     const info = await response.json();
     if (info.service !== 'vinx-docs') throw new Error();
     disable(false);
+    if (info.version) document.getElementById('app-version').textContent = 'v' + info.version;
     const mode = info.autoSync?.mode || 'off';
     const auto = info.settings?.autoSync && mode !== 'off';
     message(auto

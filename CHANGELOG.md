@@ -2,6 +2,10 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循语义化版本。
 
+## [Unreleased]
+
+- 首页和管理后台的顶栏显示版本号；`/api/status` 增加 `version` 字段。
+
 ## [0.2.0] - 2026-09-27
 
 ### 新增

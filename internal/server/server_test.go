@@ -337,6 +337,9 @@ func TestConfigAndSettingsEndpointsDriveTheAdminPage(t *testing.T) {
 	if mode := cfg["autoSync"].(map[string]any)["mode"].(string); !strings.HasPrefix(mode, "inotify(") && mode != "poll" && mode != "idle" {
 		t.Fatal(mode)
 	}
+	if status := f.get("/api/status", nil).json(t); status["version"] != server.Version {
+		t.Fatal(status)
+	}
 	saved := f.post("/api/settings", map[string]any{"autoSync": false, "debounceSeconds": 9}, nil).json(t)
 	if saved["settings"].(map[string]any)["debounceSeconds"] != float64(9) || saved["autoSync"].(map[string]any)["mode"] != "off" {
 		t.Fatal(saved)

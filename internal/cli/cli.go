@@ -107,6 +107,7 @@ func errorf(format string, args ...any) { fmt.Fprintf(stderr, format, args...) }
 // 代替编译进二进制的前端资源，改前端文件后不用重新编译。默认用内嵌资源；家目录里自带 web/ 时仍优先用家目录。
 func Main(args []string) int {
 	assets.Install()
+	server.Version = Version
 	assetsDir := os.Getenv("VINX_DOCS_ASSETS")
 	for len(args) >= 2 && (args[0] == "--home" || args[0] == "--assets") {
 		if args[0] == "--home" {

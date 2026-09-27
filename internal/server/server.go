@@ -31,6 +31,9 @@ import (
 // Service 是健康检查里的服务名，manage 靠它确认进程身份。
 const Service = "vinx-docs"
 
+// Version 是程序版本号，由命令行入口设置，/api/status 返回给页面显示。
+var Version = "dev"
+
 // 三种安全头策略：站点自身、项目里的 HTML 隔离预览、原件下载。
 const (
 	SitePolicy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
@@ -603,6 +606,7 @@ func (s *Server) statusPayload() *ojson.Object {
 	mode, lastRun, lastError := s.Auto.State()
 	return ojson.NewObject(
 		"service", Service,
+		"version", Version,
 		"pid", os.Getpid(),
 		"busy", s.Lock.Locked(),
 		"settings", settingsOf(cfg),

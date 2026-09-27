@@ -152,6 +152,8 @@ body[data-font=larger] .reader .markdown-section{font-size:19px;line-height:2}
 .hub-top .brand{margin:0;white-space:nowrap}
 .hub-top .brand span{margin-left:10px}
 .hub-top .brand a{color:inherit;text-decoration:none}
+.hub-top .brand .brand-version{font-family:inherit;font-size:12px;font-weight:400}
+.hub-top .brand .brand-version:empty{display:none}
 .hub-top .global-search{flex:1 1 320px;margin:0;min-width:0}
 .global-search input{margin:0;min-height:40px;padding:8px 14px;font-size:14px;background:var(--card)}
 .hub-top .hub-actions{flex-wrap:wrap}
@@ -159,7 +161,7 @@ body[data-font=larger] .reader .markdown-section{font-size:19px;line-height:2}
 .hub-footer{margin-top:40px}
 .hub-footer details summary{cursor:pointer}
 button,a,summary{touch-action:manipulation}
-@media(max-width:600px){.hub-top .brand span{display:none}.hub-top .hub-actions{width:100%}.hub-top .hub-actions .ghost-button{flex:1 1 auto;padding:7px 10px}}
+@media(max-width:600px){.hub-top .brand span:not(.brand-version){display:none}.hub-top .hub-actions{width:100%}.hub-top .hub-actions .ghost-button{flex:1 1 auto;padding:7px 10px}}
 
 /* ---- 首页：项目文档与发布的页面分两块，最近更新归到各自项目卡片里 ---- */
 .hub-section{margin-top:28px}

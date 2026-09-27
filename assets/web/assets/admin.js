@@ -363,6 +363,7 @@
     }
     renderProjects();
     const info = await call('/api/status', null, 'GET');
+    if (info.version) document.getElementById('app-version').textContent = 'v' + info.version;
     renderStats(info);
   }
 
