@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,7 +15,8 @@ import (
 	"strings"
 	"time"
 
-	_ "modernc.org/sqlite" // 纯 Go 的 SQLite 驱动，不需要 cgo
+	"modernc.org/sqlite" // 纯 Go 的 SQLite 驱动，不需要 cgo
+	sqlite3 "modernc.org/sqlite/lib"
 
 	"github.com/vinx-lab/vinx-docs/internal/config"
 	"github.com/vinx-lab/vinx-docs/internal/files"
@@ -137,11 +139,31 @@ func Connect(path string) (*Conn, error) {
 	db.SetMaxOpenConns(1)
 	db.SetMaxIdleConns(1)
 	db.SetConnMaxLifetime(0)
-	if _, err := db.Exec(Schema); err != nil {
-		db.Close()
-		return nil, err
+	// 第一条语句才真正打开连接（执行 DSN 里的 PRAGMA）。库文件刚建出来时，几个连接（同一服务的并发请求，
+	// 或服务和 watch 进程）会同时把它切成 WAL：各自持读锁再要写锁，SQLite 判定为死锁，直接回 SQLITE_BUSY，
+	// 不走 busy_timeout。这种失败只发生在初始化阶段，稍等重试即可；最多等 initTimeout。
+	deadline := time.Now().Add(initTimeout)
+	for delay := 5 * time.Millisecond; ; delay = min(delay*2, 200*time.Millisecond) {
+		_, err := db.Exec(Schema)
+		if err == nil {
+			break
+		}
+		if !isBusy(err) || time.Now().After(deadline) {
+			db.Close()
+			return nil, err
+		}
+		time.Sleep(delay)
 	}
 	return &Conn{db: db}, nil
+}
+
+// initTimeout 与 DSN 里的 busy_timeout 一致。
+const initTimeout = 10 * time.Second
+
+// isBusy 判断是否是 SQLITE_BUSY（含扩展码，如 SQLITE_BUSY_RECOVERY）。
+func isBusy(err error) bool {
+	var sqliteErr *sqlite.Error
+	return errors.As(err, &sqliteErr) && sqliteErr.Code()&0xff == sqlite3.SQLITE_BUSY
 }
 
 // Close 关闭连接。

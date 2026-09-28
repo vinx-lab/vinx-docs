@@ -415,3 +415,27 @@ func TestAPIEditAndCommentFlow(t *testing.T) {
 }
 
 type syncMutex struct{ sync.Mutex }
+
+// 接口回 500 时，错误原因写进服务日志（响应里只有笼统提示），不带查询串；400 不记。
+func TestServerErrorIsLogged(t *testing.T) {
+	base := tu.TempDir(t)
+	db := filepath.Join(base, "not-a-db")
+	if err := os.MkdirAll(db, 0o755); err != nil { // 库路径是目录，打开必然失败
+		t.Fatal(err)
+	}
+	a := New(base, db, nil, nil)
+	var log bytes.Buffer
+	a.ErrorLog = &log
+	status, body := a.ServeGet("/api/agents", map[string][]string{"target": {"doc:secret/x.md"}})
+	if status != 500 {
+		t.Fatalf("status = %d, body = %v", status, body)
+	}
+	line := log.String()
+	if !strings.HasPrefix(line, "GET /api/agents 返回 500：") || strings.Contains(line, "secret") {
+		t.Fatalf("日志 = %q", line)
+	}
+	log.Reset()
+	if status, _ := a.ServeGet("/api/file", map[string][]string{"target": {"bad"}}); status != 400 || log.Len() != 0 {
+		t.Fatalf("status = %d，日志 = %q", status, log.String())
+	}
+}

@@ -185,6 +185,7 @@ func Create(root string, host *string, port *int) (*Server, error) {
 		_, err := build.Refresh(s.ConfigPath, s.Output, "", "")
 		return err
 	}, s.Lock)
+	s.Vinx.ErrorLog = Stderr
 	s.http = &http.Server{
 		Handler: s,
 		// 保持连接：远程经 Tailscale 打开时，每个资源都新建 TCP 连接会明显变慢。空闲 10 秒断开。

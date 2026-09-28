@@ -6,6 +6,8 @@ package api
 
 import (
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strings"
@@ -98,6 +100,8 @@ type API struct {
 	Refresh func() error
 	// OperationLock 与同步、自动同步共用的操作锁；保存后刷新前最多等 20 秒。
 	OperationLock TryLocker
+	// ErrorLog 接口回 500 时写入错误原因；为 nil 表示不记。
+	ErrorLog io.Writer
 }
 
 // New 创建接口对象：家目录、批注库路径、保存后的刷新函数和操作锁。
@@ -316,7 +320,7 @@ func ErrorResponse(err error) (int, *ojson.Object) {
 func (a *API) ServeGet(path string, query map[string][]string) (int, any) {
 	status, data, err := a.HandleGet(path, query)
 	if err != nil {
-		return ErrorResponse(err)
+		return a.errorResponse("GET", path, err)
 	}
 	return status, data
 }
@@ -324,7 +328,17 @@ func (a *API) ServeGet(path string, query map[string][]string) (int, any) {
 func (a *API) ServePost(path string, body *ojson.Object) (int, any) {
 	status, data, err := a.HandlePost(path, body)
 	if err != nil {
-		return ErrorResponse(err)
+		return a.errorResponse("POST", path, err)
 	}
 	return status, data
+}
+
+// errorResponse 映射错误；回 500 时把原因写进服务日志（响应里只有笼统的提示）。
+// 只记方法、接口路径（不含查询串）和错误原文，不记请求体。
+func (a *API) errorResponse(method, path string, err error) (int, *ojson.Object) {
+	status, body := ErrorResponse(err)
+	if status == 500 && a.ErrorLog != nil {
+		fmt.Fprintf(a.ErrorLog, "%s %s 返回 500：%v\n", method, path, err)
+	}
+	return status, body
 }
