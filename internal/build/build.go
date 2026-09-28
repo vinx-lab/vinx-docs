@@ -288,7 +288,7 @@ func writeProject(stage string, project *ojson.Object, roots []config.Root, cach
 	if err := writeText(filepath.Join(base, "content", "__scope.md"), scopePage(project, roots, len(entries), skipped, warnings, typeSkipped)); err != nil {
 		return nil, err
 	}
-	if err := writeText(filepath.Join(base, "content", "_sidebar.md"), sidebar(entries)); err != nil {
+	if err := writeText(filepath.Join(base, "content", "_sidebar.md"), sidebar(entries, roots)); err != nil {
 		return nil, err
 	}
 	if skipped == nil {
@@ -319,27 +319,66 @@ func writeBytes(path string, data []byte) error {
 	return os.WriteFile(path, data, 0o666)
 }
 
-func sidebar(entries []Entry) string {
+// sidebar 生成项目侧栏。只有一个文档目录（或只有项目根）时：项目根的文件在前，
+// 所有目录按完整路径字母序平铺成一级，文件是二级。
+// 同时登记了带前缀的文档目录和其他目录时：项目根的文件和目录照上面的方式放在最上面，
+// 然后每个带前缀的目录按登记顺序各成一组（显示前缀）；组内先列该目录顶层的文件，
+// 再按字母序列出子目录（名字是去掉前缀的相对路径，不再往下嵌套），文件挂在子目录下。
+func sidebar(entries []Entry, roots []config.Root) string {
 	lines := []string{"- [本项目首页](#/)", "- [本项目收录范围](#/__scope.md)"}
+	grouped := false
+	if len(roots) > 1 {
+		for _, root := range roots {
+			if root.Prefix != "" {
+				grouped = true
+				break
+			}
+		}
+	}
+	if !grouped {
+		return strings.Join(append(lines, sidebarTree(entries, nil, "")...), "\n") + "\n"
+	}
+	var top []Entry
+	members := map[string][]Entry{}
+	inner := map[string]string{}
+	for _, entry := range entries {
+		root, rel, ok := config.Locate(roots, entry.Path)
+		if !ok || root.Prefix == "" {
+			top = append(top, entry)
+			continue
+		}
+		members[root.Prefix] = append(members[root.Prefix], entry)
+		inner[entry.Path] = rel
+	}
+	lines = append(lines, sidebarTree(top, nil, "")...)
+	for _, root := range roots {
+		if root.Prefix == "" || len(members[root.Prefix]) == 0 {
+			continue
+		}
+		lines = append(lines, "- "+root.Prefix)
+		lines = append(lines, sidebarTree(members[root.Prefix], inner, "  ")...)
+	}
+	return strings.Join(lines, "\n") + "\n"
+}
+
+// sidebarTree 输出一层文件加一层目录：顶层文件在前，目录按字母序，文件挂在目录下。
+// inner 给出条目在所属文档目录内的相对路径（nil 表示直接用项目内路径），indent 是整体缩进。
+func sidebarTree(entries []Entry, inner map[string]string, indent string) []string {
+	var lines []string
 	groups := map[string][]Entry{}
 	for _, entry := range entries {
-		parent := textutil.Parent(entry.Path)
+		path := entry.Path
+		if inner != nil {
+			path = inner[entry.Path]
+		}
+		parent := textutil.Parent(path)
 		if parent == "." {
 			parent = ""
 		}
 		groups[parent] = append(groups[parent], entry)
 	}
-	target := func(entry Entry) string {
-		if entry.Kind == "markdown" || entry.Kind == "text" {
-			return "#/" + *entry.Route
-		}
-		if entry.PreviewURL != "" {
-			return entry.PreviewURL
-		}
-		return entry.URL
-	}
 	for _, entry := range groups[""] {
-		lines = append(lines, fmt.Sprintf("- [%s](%s %s)", entry.Title, linkDest(target(entry)), linkTitle(entry.Path)))
+		lines = append(lines, indent+sidebarItem(entry))
 	}
 	var dirs []string
 	for key := range groups {
@@ -349,12 +388,24 @@ func sidebar(entries []Entry) string {
 	}
 	sort.Strings(dirs)
 	for _, dir := range dirs {
-		lines = append(lines, "- "+dir)
+		lines = append(lines, indent+"- "+dir)
 		for _, entry := range groups[dir] {
-			lines = append(lines, fmt.Sprintf("  - [%s](%s %s)", entry.Title, linkDest(target(entry)), linkTitle(entry.Path)))
+			lines = append(lines, indent+"  "+sidebarItem(entry))
 		}
 	}
-	return strings.Join(lines, "\n") + "\n"
+	return lines
+}
+
+// sidebarItem 是侧栏里的一条文件链接，title 是项目内路径。
+func sidebarItem(entry Entry) string {
+	target := entry.URL
+	switch {
+	case entry.Kind == "markdown" || entry.Kind == "text":
+		target = "#/" + *entry.Route
+	case entry.PreviewURL != "":
+		target = entry.PreviewURL
+	}
+	return fmt.Sprintf("- [%s](%s %s)", entry.Title, linkDest(target), linkTitle(entry.Path))
 }
 
 // linkDest 在地址含空格、括号、引号等字符时用尖括号包起来（CommonMark 写法），

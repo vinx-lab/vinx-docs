@@ -501,7 +501,7 @@ body.published .vinx-editor.docked{top:57px}
 .reader.single-doc .sidebar,.reader.single-doc .sidebar-toggle{display:none}
 .reader.single-doc .content{left:0}
 
-/* ---- 侧栏目录折叠（sidebar-fold.js）：目录行是按钮，折叠时隐藏其文件列表 ---- */
+/* ---- 侧栏目录折叠（sidebar-fold.js）：目录行是按钮，折叠时隐藏其下列表；分组下的子目录（.sidebar-subdir）字重轻一档 ---- */
 .sidebar-dir-toggle{display:flex;align-items:baseline;gap:7px;width:100%;margin:0;padding:3px 0;border:0;background:none;color:var(--muted);font:inherit;font-weight:700;line-height:1.7;text-align:left;cursor:pointer;overflow-wrap:anywhere}
 .sidebar-dir-toggle::before{content:"";flex:none;width:0;height:0;border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;transform:translateY(-1px);transition:transform .15s}
 .sidebar-dir-toggle[aria-expanded=true]::before{transform:translateY(-1px) rotate(90deg)}
@@ -510,6 +510,7 @@ body.published .vinx-editor.docked{top:57px}
 .sidebar-dir.folded>ul{display:none}
 .sidebar ul li.sidebar-current>a{color:var(--accent);font-weight:600}
 .sidebar ul li.sidebar-dir>ul{padding-left:12px}
+.sidebar-subdir>.sidebar-dir-toggle{font-weight:600}
 .sidebar ul li.sidebar-fold-tools{display:flex;gap:14px;margin-top:14px;font-size:12px}
 /* 手机宽度：vue.css 给侧栏 left:-300px，和上面按 transform 开合的写法叠加后，打开时侧栏仍在屏幕外 */
 @media(max-width:768px){.reader .sidebar{left:0}.reader.close .sidebar-toggle{background:var(--card)}}
