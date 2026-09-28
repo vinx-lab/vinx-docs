@@ -21,6 +21,16 @@
 
   DocsifyXTheme.bind(document.getElementById('theme-toggle'));
 
+  // 顶栏在手机宽度下会换行变高（按钮和搜索框各占一行，字号、项目名长短都有影响）。
+  // 把顶栏实际高度写进 --reader-top-h，侧栏、正文和搜索结果据此让开顶栏，不靠猜测的固定值。
+  const readerTop = document.querySelector('.reader-top');
+  if (readerTop) {
+    const syncTopHeight = () => document.documentElement.style.setProperty('--reader-top-h', Math.ceil(readerTop.getBoundingClientRect().height) + 'px');
+    syncTopHeight();
+    if (window.ResizeObserver) new ResizeObserver(syncTopHeight).observe(readerTop);
+    else addEventListener('resize', syncTopHeight);
+  }
+
   const FONT_KEY = 'docsify-x-font';
   const sizes = ['', 'large', 'larger'];
   function applyFont(value) {
