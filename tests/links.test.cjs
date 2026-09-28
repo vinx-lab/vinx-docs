@@ -60,3 +60,10 @@ test('工作簿优先给在线预览，并保留原件下载地址', () => {
   assert.equal(hit.href, '/projects/p/sheet.html?f=%E9%9C%80%E6%B1%82%2F%E8%A1%A8%E6%A0%BC.xlsx');
   assert.equal(links.resolveLink('缺失.xlsx', 'README.md', workbook).type, 'blocked');
 });
+
+test('生成的收录范围页按文档放行，未声明时仍阻止', () => {
+  const links = require(modulePath);
+  const withScope = { ...manifest, scopeRoute: '__scope.md' };
+  assert.deepEqual(links.resolveLink('#/__scope.md', 'README.md', withScope), { type: 'document', href: '#/__scope.md' });
+  assert.equal(links.resolveLink('#/__scope.md', 'README.md', manifest).type, 'blocked');
+});
