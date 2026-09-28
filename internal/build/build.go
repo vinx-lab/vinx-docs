@@ -339,7 +339,7 @@ func sidebar(entries []Entry) string {
 		return entry.URL
 	}
 	for _, entry := range groups[""] {
-		lines = append(lines, fmt.Sprintf("- [%s](%s)", entry.Title, target(entry)))
+		lines = append(lines, fmt.Sprintf("- [%s](%s %s)", entry.Title, linkDest(target(entry)), linkTitle(entry.Path)))
 	}
 	var dirs []string
 	for key := range groups {
@@ -351,10 +351,26 @@ func sidebar(entries []Entry) string {
 	for _, dir := range dirs {
 		lines = append(lines, "- "+dir)
 		for _, entry := range groups[dir] {
-			lines = append(lines, fmt.Sprintf("  - [%s](%s)", entry.Title, target(entry)))
+			lines = append(lines, fmt.Sprintf("  - [%s](%s %s)", entry.Title, linkDest(target(entry)), linkTitle(entry.Path)))
 		}
 	}
 	return strings.Join(lines, "\n") + "\n"
+}
+
+// linkDest 在地址含空格、括号、引号等字符时用尖括号包起来（CommonMark 写法），
+// 否则 Markdown 会在这些字符处截断链接，整行显示成原文。
+func linkDest(target string) string {
+	if !strings.ContainsAny(target, " \t()<>\"'\\") {
+		return target
+	}
+	return "<" + strings.NewReplacer(`\`, `\\`, "<", `\<`, ">", `\>`, "\r", " ", "\n", " ").Replace(target) + ">"
+}
+
+// linkTitle 把文件的项目内路径写成 Markdown 链接的 title（鼠标悬停时显示），
+// 转义反斜杠和双引号，换行换成空格，避免路径里的字符提前结束 title。
+func linkTitle(path string) string {
+	escaped := strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\r", " ", "\n", " ").Replace(path)
+	return `"` + escaped + `"`
 }
 
 func rsplitColon(item string) (string, string) {

@@ -5,6 +5,8 @@
   if (shortId) document.body.classList.add('single-doc');
   const manifestUrl = shortId ? '/a/' + encodeURIComponent(shortId) + '/__docsify_x/manifest' : base + 'manifest.json';
   const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  // marked 交给 link 渲染器的 title 已经转义过一次，先还原再转义，避免悬停提示里出现 &quot;。
+  const unescapeHtml = value => String(value).replace(/&(amp|lt|gt|quot|#39);/g, (_, name) => ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" }[name]));
   const loaded = new Map();
   function loadScript(src) {
     if (!loaded.has(src)) {
@@ -284,7 +286,7 @@
           const label = result.type === 'html' ? ' <small>↗ HTML</small>'
             : result.type === 'sheet' ? ' <small>▦ 表格预览</small>'
             : result.type === 'download' ? ' <small>↓ 原件</small>' : '';
-          return '<a href="' + escape(result.href) + '"' + attrs + download + (title ? ' title="' + escape(title) + '"' : '') + '>' + text + label + '</a>';
+          return '<a href="' + escape(result.href) + '"' + attrs + download + (title ? ' title="' + escape(unescapeHtml(title)) + '"' : '') + '>' + text + label + '</a>';
         },
         image: function (href, title, text) {
           const result = DocsifyXLinks.resolveLink(href, source, meta);
