@@ -70,7 +70,7 @@ var readEndpoints = map[string]bool{"/api/healthz": true, "/api/status": true, "
 var writeEndpoints = map[string]api.RouteSpec{
 	"/api/refresh":        {Limit: 65536},
 	"/api/projects":       {Required: []string{"docsPath"}, Limit: 65536},
-	"/api/project/update": {Required: []string{"id"}, Optional: []string{"name", "exclude", "roots"}, Limit: 65536},
+	"/api/project/update": {Required: []string{"id"}, Optional: []string{"name", "exclude", "roots", "types"}, Limit: 65536},
 	"/api/project/remove": {Required: []string{"id"}, Limit: 65536},
 	"/api/settings":       {Optional: config.DefaultSettings().Keys(), Limit: 65536},
 }
@@ -696,8 +696,13 @@ func (s *Server) configPayload() *ojson.Object {
 		if !ok {
 			exclude = []any{}
 		}
+		types := []any{}
+		for _, ext := range config.Types(item) {
+			types = append(types, ext)
+		}
 		entry.Set("home", home)
 		entry.Set("exclude", exclude)
+		entry.Set("types", types)
 		entry.Set("url", "/projects/"+textutil.Str(id)+"/")
 		built := report[textutil.Str(id)]
 		for _, pair := range []struct {
@@ -720,7 +725,21 @@ func (s *Server) configPayload() *ojson.Object {
 		"server", serverOf(cfg),
 		"autoSync", ojson.NewObject("mode", mode, "lastError", lastError),
 		"projects", projects,
+		"typeGroups", typeGroupsPayload(),
 	)
+}
+
+// typeGroupsPayload 给后台的扩展名勾选框用，和 config.KindFor 能识别的扩展名一致。
+func typeGroupsPayload() []any {
+	out := []any{}
+	for _, group := range config.TypeGroups() {
+		exts := make([]any, len(group.Extensions))
+		for i, ext := range group.Extensions {
+			exts[i] = ext
+		}
+		out = append(out, ojson.NewObject("label", group.Label, "extensions", exts))
+	}
+	return out
 }
 
 // ---------------------------------------------------------------- POST 接口
@@ -844,6 +863,7 @@ func (s *Server) write(path string, body *ojson.Object) (int, any) {
 	case "/api/project/update":
 		results, err = build.UpdateProject(s.ConfigPath, s.Output, idOf(body), build.ProjectUpdate{
 			Name: body.Value("name"), Exclude: body.Value("exclude"), Roots: body.Value("roots"),
+			Types: body.Value("types"),
 		})
 	case "/api/project/remove":
 		if err = build.Unregister(s.ConfigPath, s.Output, idOf(body)); err == nil {

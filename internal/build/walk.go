@@ -18,11 +18,18 @@ type Candidate struct {
 	Src string
 }
 
-// IterCandidates 遍历项目的每个文档目录；只有强制规则和 exclude 能把文件挡在外面。
-// 返回按路径排序的候选、排序后的排除条目（"路径:原因"）和提示条目。
-func IterCandidates(project *ojson.Object, roots []config.Root) ([]Candidate, []string, []string) {
+// IterCandidates 遍历项目的每个文档目录；强制规则、exclude 和 types 能把文件挡在外面。
+// 返回按路径排序的候选、排序后的排除条目（"路径:原因"）、提示条目，
+// 以及因不在 types 里而未收录的文件数（按小写扩展名汇总，不逐条进排除条目）。
+func IterCandidates(project *ojson.Object, roots []config.Root) ([]Candidate, []string, []string, map[string]int) {
 	excludes := config.Excludes(project)
-	st := &scanState{seen: map[string]bool{}}
+	st := &scanState{seen: map[string]bool{}, typeSkipped: map[string]int{}}
+	if types := config.Types(project); len(types) > 0 {
+		st.types = map[string]bool{}
+		for _, ext := range types {
+			st.types[ext] = true
+		}
+	}
 	for _, root := range roots {
 		// 前缀本身也要过一遍排除规则，否则整目录级别的排除挡不住带前缀的目录。
 		if root.Prefix != "" && MatchesExcludeDir(root.Prefix, excludes) {
@@ -34,14 +41,16 @@ func IterCandidates(project *ojson.Object, roots []config.Root) ([]Candidate, []
 	sort.SliceStable(st.result, func(i, j int) bool { return st.result[i].Rel < st.result[j].Rel })
 	sort.Strings(st.skipped)
 	sort.Strings(st.warnings)
-	return st.result, st.skipped, st.warnings
+	return st.result, st.skipped, st.warnings, st.typeSkipped
 }
 
 type scanState struct {
-	result   []Candidate
-	skipped  []string
-	warnings []string
-	seen     map[string]bool
+	result      []Candidate
+	skipped     []string
+	warnings    []string
+	seen        map[string]bool
+	types       map[string]bool // nil 表示不限类型
+	typeSkipped map[string]int
 }
 
 // walkRoot 自顶向下遍历一个文档目录：不跟随符号链接，出错的目录静默跳过。
@@ -108,6 +117,16 @@ func walkRoot(prefix, root string, excludes []string, st *scanState) {
 			if kind == "" {
 				st.skipped = append(st.skipped, rel+":未知类型")
 				continue
+			}
+			if st.types != nil {
+				ext := textutil.Lower(textutil.Suffix(path))
+				if !st.types[ext] {
+					if ext == "" {
+						ext = "(无扩展名)"
+					}
+					st.typeSkipped[ext]++
+					continue
+				}
 			}
 			if kind == "markdown" || kind == "text" || kind == "html" {
 				blocked, suspect := contentReasonOf(path)

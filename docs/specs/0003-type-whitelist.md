@@ -1,6 +1,6 @@
 ---
 issue: 3
-status: ready
+status: done
 ---
 
 # 项目收录的文件类型白名单
@@ -34,4 +34,20 @@ status: ready
 
 ## 结果
 
-（完成后补）
+已实现。
+
+- 配置：`internal/config/project.go` 新增 `types` 校验与规范化（`NormalizeType`、`Types`），以及后台勾选框用的分组 `TypeGroups`（与 `KindFor` 的扩展名集合一致，`.csv` 归入表格组）。`include` 报错不变。
+- 收录：`internal/build/walk.go` 在 exclude、强制安全规则、未知类型判断之后，内容扫描之前按类型过滤；被跳过的文件按扩展名计数，不进排除条目，所以 exclude 未命中报告不受影响。范围页写明「只收录 …」并列出「因类型未收录」的计数。
+- 接口：`/api/project/update` 接受 `types`，空数组表示删掉该字段（恢复全部收录）；`/api/config` 返回每个项目的 `types` 和全局 `typeGroups`。
+- 后台：项目详情在排除规则下方按组列出扩展名勾选框，保存走原接口。
+- 文档：新增 ADR 0004，0002 改为已被 0004 取代；更新 `AGENTS.md`、`README.md`、`docs/project-registration.md`。
+
+验证：
+
+- 单元测试：`types` 校验（不支持的扩展名、不含首页扩展名、非数组时拒绝；大小写规范化；缺省等于全部）；设为 `.md`、`.html` 时只收录这两类，exclude 和安全规则照旧，未命中的 exclude 照旧报告；范围页汇总计数；后台接口保存、规范化、清空恢复。`go test ./...` 全部通过。
+- HTTP：临时家目录起服务，设 `types` 后 `_sidebar.md` 只含 md/html，png、json 原始地址 404；不含首页扩展名、不支持的扩展名均返回 400；新建 `.md` 经文件监听自动出现，新建 `.json` 不出现、计入范围页。
+- 真实浏览器：后台勾选、保存、刷新后状态保留；阅读页导航只剩勾选类型；范围页显示汇总；全不勾保存后恢复全部收录。
+
+未覆盖：没有扩展名的 `Makefile`、`Dockerfile` 无法写进 `types`，设了 `types` 就不收录，范围页记为「(无扩展名)」。
+
+未验证：后台勾选框在深色模式和手机宽度下的样式。

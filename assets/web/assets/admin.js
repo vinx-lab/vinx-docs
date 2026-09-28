@@ -125,7 +125,7 @@
 
   // 列表切换、同步全部、接入新项目都会重绘详情区；有未保存的改动时先确认，避免悄悄丢掉。
   function confirmDiscard() {
-    return !isDirty() || confirm('当前项目有未保存的改动（名称、文档目录或排除规则），继续会丢弃这些改动。确定继续？');
+    return !isDirty() || confirm('当前项目有未保存的改动（名称、文档目录、排除规则或收录类型），继续会丢弃这些改动。确定继续？');
   }
 
   function renderProjects() {
@@ -250,6 +250,26 @@
     }
     unusedNote.append(chips, el('p', 'card-note', unusedHint));
 
+    // 收录类型：按组列出服务端支持的扩展名，全不勾 = 不限类型。
+    const chosen = new Set(project.types || []);
+    const typeBox = el('fieldset', 'type-picker');
+    typeBox.append(el('legend', '', '收录类型（只收录勾选的扩展名；全不勾 = 全部收录；需包含首页的 .md）'));
+    const typeInputs = [];
+    for (const group of config.typeGroups || []) {
+      const row = el('div', 'type-group');
+      row.append(el('span', 'type-group-label', group.label));
+      for (const ext of group.extensions) {
+        const option = el('label', 'type-option');
+        const box = document.createElement('input');
+        box.type = 'checkbox'; box.value = ext; box.checked = chosen.has(ext);
+        typeInputs.push(box);
+        option.append(box, el('code', '', ext));
+        row.append(option);
+      }
+      typeBox.append(row);
+    }
+    const selectedTypes = () => typeInputs.filter(box => box.checked).map(box => box.value);
+
     const actions = document.createElement('div');
     actions.className = 'card-actions';
     const save = document.createElement('button'); save.type = 'button'; save.textContent = '保存并同步';
@@ -301,12 +321,12 @@
       detail.append(warn);
     }
 
-    detail.append(rootsLabel, label, unusedNote, actions, note);
+    detail.append(rootsLabel, label, unusedNote, typeBox, actions, note);
     detail.append(detailBlock('疑似含明文口令的已收录文件', project.warnings, '没有命中。'));
     detail.append(detailBlock('被排除的条目', project.skipped, '没有条目被排除。'));
     detail.append(danger);
 
-    const read = () => JSON.stringify([nameInput.value, rootsInput.value, excludes.value]);
+    const read = () => JSON.stringify([nameInput.value, rootsInput.value, excludes.value, selectedTypes()]);
     draft = { read, initial: read() };
 
     save.addEventListener('click', async () => {
@@ -324,6 +344,7 @@
           name: nameInput.value,
           roots,
           exclude: excludes.value.split('\n').map(line => line.trim()).filter(Boolean),
+          types: selectedTypes(),
         });
         const saved = `已保存：${result.fileCount} 个文件，排除 ${result.skippedCount} 个条目，复用 ${result.reusedCount} 个未变更文件。`;
         const stale = result.projects.find(item => item.id === project.id)?.unusedExclude || [];

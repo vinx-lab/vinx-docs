@@ -774,3 +774,115 @@ func TestRefusesToManageUnmarkedOutput(t *testing.T) {
 		}
 	}
 }
+
+func typedSource(t *testing.T, base string) string {
+	t.Helper()
+	source := setupSource(t, base)
+	mustWrite(t, filepath.Join(source, "page.html"), "<h1>页面</h1>")
+	mustWrite(t, filepath.Join(source, "img", "a.png"), "png")
+	mustWrite(t, filepath.Join(source, "img", "b.PNG"), "png")
+	mustWrite(t, filepath.Join(source, "data.json"), "{}")
+	mustWrite(t, filepath.Join(source, "Makefile"), "all:\n")
+	mustWrite(t, filepath.Join(source, "drafts", "draft.md"), "# 草稿")
+	mustWrite(t, filepath.Join(source, "old.html"), "<p>old</p>")
+	mustWrite(t, filepath.Join(source, ".hidden", "x.md"), "# 隐藏")
+	mustWrite(t, filepath.Join(source, "deploy.env"), "A=1")
+	mustWrite(t, filepath.Join(source, "key.md"), "-----BEGIN OPENSSH PRIVATE KEY-----\nabc\n")
+	return source
+}
+
+func TestTypesLimitCandidatesAfterExcludeAndPolicy(t *testing.T) {
+	base := tempDir(t)
+	source := typedSource(t, base)
+	p := project(source, "exclude", strs("drafts/", "old.html", "nothing/"), "types", strs(".md", ".HTML"))
+	candidates, skipped, _, typeSkipped := IterCandidates(p, []config.Root{{Prefix: "", Path: source}})
+	var rels []string
+	for _, c := range candidates {
+		rels = append(rels, c.Rel)
+	}
+	if strings.Join(rels, ",") != "README.md,guide/使用 说明.md,page.html" {
+		t.Fatal(rels)
+	}
+	if typeSkipped[".png"] != 2 || typeSkipped[".json"] != 1 || typeSkipped["(无扩展名)"] != 1 || len(typeSkipped) != 3 {
+		t.Fatal(typeSkipped)
+	}
+	for _, want := range []string{"drafts/:exclude", "old.html:exclude", ".hidden/:隐藏路径", "deploy.env:凭据或环境文件", "key.md:文件内含私钥"} {
+		if !hasItem(skipped, want) {
+			t.Fatalf("missing %s in %v", want, skipped)
+		}
+	}
+	for _, item := range skipped {
+		if strings.HasSuffix(item, ".png") || strings.Contains(item, "data.json") {
+			t.Fatalf("类型跳过的文件不应逐条列出: %v", skipped)
+		}
+	}
+	if got := unusedExcludes(config.Excludes(p), skipped); strings.Join(got, ",") != "nothing/" {
+		t.Fatal(got)
+	}
+	// 不设 types 时照旧全部收录，也没有类型计数。
+	all, _, _, none := IterCandidates(project(source), []config.Root{{Prefix: "", Path: source}})
+	if len(none) != 0 || len(all) <= len(candidates) {
+		t.Fatal(len(all), none)
+	}
+}
+
+func TestTypesRefreshAndScopePage(t *testing.T) {
+	base := tempDir(t)
+	source := typedSource(t, base)
+	_, cfg, output := makeTool(t, base)
+	writeConfig(t, cfg, []any{project(source, "types", strs(".md", ".html"))})
+	if _, err := Refresh(cfg, output, "", ""); err != nil {
+		t.Fatal(err)
+	}
+	site := filepath.Join(output, "projects", "demo")
+	sidebar := readText(t, filepath.Join(site, "content", "_sidebar.md"))
+	if strings.Contains(sidebar, "png") || strings.Contains(sidebar, "json") || !strings.Contains(sidebar, "page.html") {
+		t.Fatal(sidebar)
+	}
+	if exists(filepath.Join(site, "raw", "img", "a.png")) || exists(filepath.Join(site, "raw", "data.json")) {
+		t.Fatal("类型之外的文件不应导出")
+	}
+	scope := readText(t, filepath.Join(site, "content", "__scope.md"))
+	for _, want := range []string{"只收录 .html、.md", "## 因类型未收录", "(无扩展名) 1、.json 1、.png 2"} {
+		if !strings.Contains(scope, want) {
+			t.Fatalf("scope page missing %q:\n%s", want, scope)
+		}
+	}
+	// 去掉 types 后恢复全部收录，范围页不再出现类型一节。
+	if _, err := UpdateProject(cfg, output, "demo", ProjectUpdate{Types: []any{}}); err != nil {
+		t.Fatal(err)
+	}
+	if config.Projects(loadJSON(t, cfg))[0].(*ojson.Object).Has("types") {
+		t.Fatal("空数组应去掉 types 字段")
+	}
+	if !exists(filepath.Join(site, "raw", "img", "a.png")) {
+		t.Fatal("去掉 types 后应恢复收录")
+	}
+	if scope := readText(t, filepath.Join(site, "content", "__scope.md")); strings.Contains(scope, "因类型未收录") || strings.Contains(scope, "只收录") {
+		t.Fatal(scope)
+	}
+}
+
+func TestUpdateProjectTypesNormalizesAndRejects(t *testing.T) {
+	base := tempDir(t)
+	source := setupSource(t, base)
+	_, cfg, output := makeTool(t, base)
+	writeConfig(t, cfg, []any{project(source)})
+	Refresh(cfg, output, "", "")
+	if _, err := UpdateProject(cfg, output, "demo", ProjectUpdate{Types: strs("HTML", ".MD", ".md")}); err != nil {
+		t.Fatal(err)
+	}
+	saved := config.Projects(loadJSON(t, cfg))[0].(*ojson.Object)
+	if ojson.Dumps(saved.Value("types"), -1) != `[".html", ".md"]` {
+		t.Fatal(ojson.Dumps(saved, -1))
+	}
+	_, err := UpdateProject(cfg, output, "demo", ProjectUpdate{Types: strs(".md", ".exe")})
+	expectConfigError(t, err, "types只能包含支持的扩展名")
+	_, err = UpdateProject(cfg, output, "demo", ProjectUpdate{Types: strs(".html")})
+	expectConfigError(t, err, "types必须包含首页的扩展名")
+	_, err = UpdateProject(cfg, output, "demo", ProjectUpdate{Types: ".md"})
+	expectConfigError(t, err, "types必须是扩展名数组")
+	if ojson.Dumps(config.Projects(loadJSON(t, cfg))[0].(*ojson.Object).Value("types"), -1) != `[".html", ".md"]` {
+		t.Fatal("被拒绝的修改不应落盘")
+	}
+}

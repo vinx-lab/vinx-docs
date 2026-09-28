@@ -27,6 +27,90 @@ var (
 	ReservedNames           = set("_sidebar.md", "index.html", "index.htm", "__scope.md")
 )
 
+// TypeGroup 是后台勾选框的一组扩展名；各组合起来正好是 KindFor 能识别的全部扩展名。
+type TypeGroup struct {
+	Label      string
+	Extensions []string
+}
+
+// TypeGroups 按后台显示顺序分组；表格组取 .csv（文本预览）和 .xlsx（下载），其余文本归到文本与代码。
+func TypeGroups() []TypeGroup {
+	var text []string
+	for ext := range TextExtensions {
+		if ext != ".csv" {
+			text = append(text, ext)
+		}
+	}
+	return []TypeGroup{
+		{"Markdown", sortedKeys(MarkdownExtensions)},
+		{"HTML", sortedKeys(HTMLExtensions)},
+		{"文本与代码", sortedList(text)},
+		{"图片", sortedKeys(ImageExtensions)},
+		{"表格", sortedList(append([]string{".csv"}, sortedKeys(DownloadExtensions)...))},
+	}
+}
+
+func sortedKeys(m map[string]bool) []string {
+	var out []string
+	for key := range m {
+		out = append(out, key)
+	}
+	return sortedList(out)
+}
+
+func sortedList(items []string) []string {
+	sort.Strings(items)
+	return items
+}
+
+// NormalizeType 把扩展名规范成小写带点；不是 KindFor 能识别的扩展名时返回空串。
+func NormalizeType(value any) string {
+	text, ok := value.(string)
+	if !ok {
+		return ""
+	}
+	ext := textutil.Lower(textutil.Strip(text))
+	if ext != "" && !strings.HasPrefix(ext, ".") {
+		ext = "." + ext
+	}
+	if len(ext) < 2 || strings.ContainsAny(ext[1:], "./\\") || KindFor("x"+ext) == "" {
+		return ""
+	}
+	return ext
+}
+
+// Types 返回项目允许收录的扩展名（规范化、去重、排序）；空表示不限类型。
+func Types(project *ojson.Object) []string {
+	list, _ := project.Value("types").([]any)
+	seen := map[string]bool{}
+	var out []string
+	for _, item := range list {
+		if ext := NormalizeType(item); ext != "" && !seen[ext] {
+			seen[ext] = true
+			out = append(out, ext)
+		}
+	}
+	return sortedList(out)
+}
+
+// validateTypes 校验 types 字段：扩展名数组，每项都要能识别；缺省或空数组表示不限类型。
+func validateTypes(project *ojson.Object) ([]string, error) {
+	raw, present := project.Get("types")
+	if !present || raw == nil {
+		return nil, nil
+	}
+	list, ok := raw.([]any)
+	if !ok {
+		return nil, Errorf("types必须是扩展名数组")
+	}
+	for _, item := range list {
+		if NormalizeType(item) == "" {
+			return nil, Errorf("types只能包含支持的扩展名: %s", textutil.Str(item))
+		}
+	}
+	return Types(project), nil
+}
+
 func set(items ...string) map[string]bool {
 	m := map[string]bool{}
 	for _, item := range items {
@@ -334,6 +418,10 @@ func ValidateProject(value any, protectedPorts []any) ([]Root, error) {
 	if err != nil {
 		return nil, err
 	}
+	types, err := validateTypes(project)
+	if err != nil {
+		return nil, err
+	}
 	var excludes []any
 	if raw, present := project.Get("exclude"); present {
 		list, ok := raw.([]any)
@@ -379,7 +467,19 @@ func ValidateProject(value any, protectedPorts []any) ([]Root, error) {
 	if PolicyReason(homeRel, homePath) != "" || !MarkdownExtensions[textutil.Lower(textutil.Suffix(homePath))] {
 		return nil, Errorf("home必须是安全的Markdown文件")
 	}
+	if homeExt := textutil.Lower(textutil.Suffix(homePath)); len(types) > 0 && !contains(types, homeExt) {
+		return nil, Errorf("types必须包含首页的扩展名 %s", homeExt)
+	}
 	return roots, nil
+}
+
+func contains(list []string, item string) bool {
+	for _, value := range list {
+		if value == item {
+			return true
+		}
+	}
+	return false
 }
 
 // Excludes 返回项目的 exclude 列表（已校验的项目）。

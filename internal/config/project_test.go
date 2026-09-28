@@ -4,8 +4,10 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
+	"github.com/vinx-lab/vinx-docs/internal/ojson"
 	"github.com/vinx-lab/vinx-docs/internal/textutil"
 )
 
@@ -94,6 +96,64 @@ func TestForbiddenDirCase(t *testing.T) {
 	for _, name := range []string{"ID_RSA", "Credentials.JSON", "Server.PEM", "Prod.ENV"} {
 		if PolicyReason(name, "C:/r/"+name) == "" {
 			t.Errorf("%q 应被拦住", name)
+		}
+	}
+}
+
+func TestValidateProjectTypes(t *testing.T) {
+	dir, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "README.md"), []byte("# 首页"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	mk := func(types any) *ojson.Object {
+		p := ojson.NewObject("id", "demo", "name", "演示", "docsPath", dir, "home", "README.md")
+		if types != nil {
+			p.Set("types", types)
+		}
+		return p
+	}
+	for _, ok := range []any{nil, []any{}, []any{".md", ".html"}, []any{"MD", ".HTML", ".md"}} {
+		if _, err := ValidateProject(mk(ok), nil); err != nil {
+			t.Errorf("types %v 应通过: %v", ok, err)
+		}
+	}
+	for _, bad := range []any{".md", []any{".md", ".exe"}, []any{".md", 3}, []any{".html"}, []any{".md", ".tar.md"}} {
+		if _, err := ValidateProject(mk(bad), nil); err == nil || !IsConfigError(err) {
+			t.Errorf("types %v 应被拒绝, got %v", bad, err)
+		}
+	}
+	if got := Types(mk([]any{"MD", ".HTML", ".md", " png "})); strings.Join(got, ",") != ".html,.md,.png" {
+		t.Errorf("规范化结果不对: %v", got)
+	}
+	if got := Types(mk(nil)); len(got) != 0 {
+		t.Errorf("缺省应表示不限类型: %v", got)
+	}
+	// include 的报错保持原样。
+	p := mk(nil)
+	p.Set("include", []any{"*.md"})
+	if _, err := ValidateProject(p, nil); err == nil || !strings.Contains(err.Error(), "include白名单已移除") {
+		t.Errorf("include 报错变了: %v", err)
+	}
+}
+
+func TestTypeGroupsCoverAllKinds(t *testing.T) {
+	seen := map[string]bool{}
+	for _, group := range TypeGroups() {
+		for _, ext := range group.Extensions {
+			if KindFor("x"+ext) == "" || seen[ext] {
+				t.Errorf("分组里的扩展名无效或重复: %s", ext)
+			}
+			seen[ext] = true
+		}
+	}
+	for _, m := range []map[string]bool{TextExtensions, MarkdownExtensions, HTMLExtensions, ImageExtensions, DownloadExtensions} {
+		for ext := range m {
+			if !seen[ext] {
+				t.Errorf("分组漏了 %s", ext)
+			}
 		}
 	}
 }

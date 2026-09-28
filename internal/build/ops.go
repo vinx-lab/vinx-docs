@@ -180,7 +180,7 @@ func RegisterPath(configPath, output, docsPath string) (results []*ProjectResult
 	if _, err := config.ValidateOutput(output, append(roots, root), toolRootOf(configPath)); err != nil {
 		return nil, err
 	}
-	candidates, _, _ := IterCandidates(project, []config.Root{{Prefix: "", Path: root}})
+	candidates, _, _, _ := IterCandidates(project, []config.Root{{Prefix: "", Path: root}})
 	var markdown []string
 	for _, candidate := range candidates {
 		if config.KindFor(candidate.Src) == "markdown" {
@@ -215,9 +215,10 @@ type ProjectUpdate struct {
 	Exclude any
 	Home    any
 	Roots   any
+	Types   any
 }
 
-// UpdateProject 修改显示名、文档目录、排除规则或首页；源文档不受影响。
+// UpdateProject 修改显示名、文档目录、排除规则、收录类型或首页；源文档不受影响。
 func UpdateProject(configPath, output, projectID string, update ProjectUpdate) (results []*ProjectResult, err error) {
 	defer guard(&err)
 	unlock, err := config.Lock(configPath)
@@ -300,6 +301,28 @@ func UpdateProject(configPath, output, projectID string, update ProjectUpdate) (
 	}
 	if update.Home != nil {
 		target.Set("home", update.Home)
+	}
+	if update.Types != nil {
+		list, ok := update.Types.([]any)
+		if !ok || len(list) > 100 {
+			return nil, config.Errorf("types必须是扩展名数组")
+		}
+		for _, item := range list {
+			if config.NormalizeType(item) == "" {
+				return nil, config.Errorf("types只能包含支持的扩展名: %s", textutil.Str(item))
+			}
+		}
+		// 存规范化的结果；空数组等于不限类型，直接去掉字段。是否含首页扩展名由 ValidateProject 检查。
+		target.Set("types", list)
+		if types := config.Types(target); len(types) > 0 {
+			normalized := make([]any, len(types))
+			for i, ext := range types {
+				normalized[i] = ext
+			}
+			target.Set("types", normalized)
+		} else {
+			target.Delete("types")
+		}
 	}
 	return publishCandidate(configPath, output, cfg, withProjects(cfg, projects))
 }

@@ -135,7 +135,7 @@ func writeProject(stage string, project *ojson.Object, roots []config.Root, cach
 	reused := 0
 	known, _ := cache.Value(projectID).(*ojson.Object)
 	fresh := ojson.NewObject()
-	candidates, skipped, warnings := IterCandidates(project, roots)
+	candidates, skipped, warnings, typeSkipped := IterCandidates(project, roots)
 	for _, candidate := range candidates {
 		rel, src := candidate.Rel, candidate.Src
 		kind := config.KindFor(src)
@@ -285,7 +285,7 @@ func writeProject(stage string, project *ojson.Object, roots []config.Root, cach
 	if err := writeText(filepath.Join(base, "manifest.json"), ojson.Dumps(manifest, 2)+"\n"); err != nil {
 		return nil, err
 	}
-	if err := writeText(filepath.Join(base, "content", "__scope.md"), scopePage(project, roots, len(entries), skipped, warnings)); err != nil {
+	if err := writeText(filepath.Join(base, "content", "__scope.md"), scopePage(project, roots, len(entries), skipped, warnings, typeSkipped)); err != nil {
 		return nil, err
 	}
 	if err := writeText(filepath.Join(base, "content", "_sidebar.md"), sidebar(entries)); err != nil {
@@ -366,11 +366,17 @@ func rsplitColon(item string) (string, string) {
 }
 
 // scopePage 生成“本项目收录了什么”的说明页。
-func scopePage(project *ojson.Object, roots []config.Root, entryCount int, skipped, warnings []string) string {
+// typeSkipped 是因不在 types 里而未收录的文件数（按扩展名），只汇总不逐条列出。
+func scopePage(project *ojson.Object, roots []config.Root, entryCount int, skipped, warnings []string, typeSkipped map[string]int) string {
+	method := "- 收录方式：登记的每个文档目录整体收录，逐项排除（黑名单）"
+	types := config.Types(project)
+	if len(types) > 0 {
+		method += "；只收录 " + strings.Join(types, "、")
+	}
 	lines := []string{
 		fmt.Sprintf("# %s 的收录范围", project.Value("name").(string)),
 		"",
-		"- 收录方式：登记的每个文档目录整体收录，逐项排除（黑名单）",
+		method,
 		fmt.Sprintf("- 已收录：%d 个文件，来自 %d 个目录", entryCount, len(roots)),
 		fmt.Sprintf("- 已排除：%d 个条目", len(skipped)),
 		"",
@@ -394,6 +400,23 @@ func scopePage(project *ojson.Object, roots []config.Root, entryCount int, skipp
 		}
 	} else {
 		lines = append(lines, "本项目没有自定义排除规则，全部排除都来自强制安全规则。")
+	}
+	if len(types) > 0 {
+		lines = append(lines, "", "## 因类型未收录", "")
+		if len(typeSkipped) > 0 {
+			exts := make([]string, 0, len(typeSkipped))
+			for ext := range typeSkipped {
+				exts = append(exts, ext)
+			}
+			sort.Strings(exts)
+			parts := make([]string, len(exts))
+			for i, ext := range exts {
+				parts[i] = fmt.Sprintf("%s %d", ext, typeSkipped[ext])
+			}
+			lines = append(lines, "不在收录类型里的文件只按扩展名计数：", "", strings.Join(parts, "、"))
+		} else {
+			lines = append(lines, "没有文件因类型未收录。")
+		}
 	}
 	lines = append(lines, "", "## 被排除的条目", "")
 	if len(skipped) > 0 {

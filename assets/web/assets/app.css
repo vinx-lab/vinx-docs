@@ -473,6 +473,12 @@ body.published .vinx-editor.docked{top:57px}
 .unused-exclude{margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:4px;background:var(--code-bg)}
 .unused-exclude .card-warning{margin:0 0 8px}
 .unused-exclude .card-note{margin:8px 0 0;font-size:12px;line-height:1.7}
+.type-picker{margin:16px 0 0;padding:0;border:0;font-size:13px;color:var(--muted)}
+.type-picker legend{padding:0;margin-bottom:8px}
+.type-group{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;padding:4px 0}
+.type-group-label{min-width:6em;color:var(--ink)}
+.type-option{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.type-option code{font-size:12px}
 .rule-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .rule-chip{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:4px;background:var(--card);font-size:12px}
 .rule-chip code{padding:3px 4px 3px 8px;overflow-wrap:anywhere}
