@@ -1,6 +1,8 @@
 /* 阅读页的编辑与批注：选中正文文字即可批注，已有批注在正文里高亮；「编辑」打开源文件编辑器。
    reader.js 每次渲染完发出 docsifyx:rendered，这里据此重画高亮。 */
 (function () {
+  // 未登录的外部访问者只读：不挂批注和编辑，也不调接口。
+  if (window.VinxAuth && window.VinxAuth.guest) return;
   const SKIP = '.page-toc, .pager, .copy-code, .vinx-select-btn, script, style';
   let comments = null;
   let section = null;
@@ -145,6 +147,8 @@
   document.addEventListener('docsifyx:rendered', event => {
     section = event.detail.section;
     floating.hidden = true;
+    // 图片和音视频不是文本，不能在页面上编辑。
+    document.getElementById('edit-doc').hidden = ['image', 'video', 'audio'].includes(reader().entry()?.kind);
     if (!comments) {
       const toggle = document.getElementById('comment-toggle');
       comments = VinxComments.mount({

@@ -206,6 +206,22 @@
     if (pager.children.length) section.append(pager);
   }
 
+  // 图片放大查看：先按屏幕大小完整显示，再点一下看原始尺寸（可滚动）；点空白处或按 Esc 关闭。
+  function zoomImage(src, alt) {
+    const overlay = document.createElement('div');
+    overlay.className = 'zoom-overlay'; overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-label', '图片放大查看');
+    const img = document.createElement('img'); img.src = src; img.alt = alt || ''; img.title = '点击切换原始尺寸';
+    const close = document.createElement('button'); close.type = 'button'; close.className = 'zoom-close'; close.textContent = '×'; close.setAttribute('aria-label', '关闭');
+    overlay.append(img, close);
+    const done = () => { overlay.remove(); removeEventListener('keydown', onKey); };
+    const onKey = event => { if (event.key === 'Escape') done(); };
+    img.addEventListener('click', event => { event.stopPropagation(); overlay.classList.toggle('actual'); });
+    overlay.addEventListener('click', done);
+    addEventListener('keydown', onKey);
+    document.body.append(overlay);
+    close.focus();
+  }
+
   try {
     const response = await fetch(manifestUrl, { cache: 'no-store' });
     if (!response.ok) throw new Error('未找到有效项目清单，请检查注册和刷新结果。');
@@ -260,13 +276,30 @@
         hook.beforeEach(function (content) {
           try { route = decodeURIComponent(vm.route.path).replace(/^\//, '') || meta.home; } catch (_) { route = meta.home; }
           const entry = meta.entries.find(e => e.route === route || e.route === route + '.md');
-          source = entry ? entry.path : meta.home;
+          // 媒体入口的正文是生成的，source 指向媒体文件本身。
+          source = entry ? entry.source || entry.path : meta.home;
           // 开头的 front matter（--- 包起来的 YAML）显示成代码块，不被当成分隔线和标题。
           return content.replace(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/, (_, yaml) => '```yaml\n' + yaml + '\n```\n\n');
         });
         hook.doneEach(function () {
           const section = document.querySelector('.markdown-section');
           if (!section) return;
+          // 图片和音视频作入口时的页面：媒体按屏幕高度等比缩小，一屏看完；图片点击放大，视频用播放器自带的全屏。
+          const mediaView = meta.entries.some(e => e.route === route && e.source);
+          section.classList.toggle('media-view', mediaView);
+          if (mediaView) section.querySelectorAll('img').forEach(img => {
+            img.title = '点击放大';
+            img.addEventListener('click', () => zoomImage(img.src, img.alt));
+          });
+          // Markdown 里直接写的 <img>/<video>/<audio>/<source> 用的是相对源文件的地址，按清单换成可访问的地址。
+          section.querySelectorAll('img[src], video[src], video[poster], audio[src], source[src]').forEach(node => {
+            ['src', 'poster'].forEach(attr => {
+              const value = node.getAttribute(attr);
+              if (!value || /^(data:|blob:|\/)/i.test(value)) return;
+              const result = DocsifyXLinks.resolveLink(value, source, meta);
+              if (['image', 'video', 'audio'].includes(result.type)) node.setAttribute(attr, result.href);
+            });
+          });
           section.querySelectorAll('table').forEach(table => {
             if (table.parentElement.classList.contains('table-scroll')) return;
             const wrapper = document.createElement('div'); wrapper.className = 'table-scroll';
@@ -295,11 +328,17 @@
           const download = ['download', 'image'].includes(result.type) ? ' download' : '';
           const label = result.type === 'html' ? ' <small>↗ HTML</small>'
             : result.type === 'sheet' ? ' <small>▦ 表格预览</small>'
+            : result.type === 'video' ? ' <small>▶ 视频</small>'
+            : result.type === 'audio' ? ' <small>▶ 音频</small>'
             : result.type === 'download' ? ' <small>↓ 原件</small>' : '';
           return '<a href="' + escape(result.href) + '"' + attrs + download + (title ? ' title="' + escape(unescapeHtml(title)) + '"' : '') + '>' + text + label + '</a>';
         },
         image: function (href, title, text) {
           const result = DocsifyXLinks.resolveLink(href, source, meta);
+          // 图片语法引用视频或音频时内嵌播放器；只加载元数据，点播放才拉取内容。
+          const label = escape(text || title || '');
+          if (result.type === 'video') return '<video controls preload="metadata" src="' + escape(result.href) + '" aria-label="' + label + '"></video>';
+          if (result.type === 'audio') return '<audio controls preload="metadata" src="' + escape(result.href) + '" aria-label="' + label + '"></audio>';
           if (result.type !== 'image') return '<span class="unpublished">[未收录图片：' + escape(text || href) + ']</span>';
           return '<img src="' + escape(result.href) + '" alt="' + escape(text) + '" loading="lazy">';
         }

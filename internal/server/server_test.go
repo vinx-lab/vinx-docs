@@ -537,6 +537,9 @@ func TestArtifactShortLinks(t *testing.T) {
 	if r := f.get("/a/"+id+"/data.bin", nil); r.headers.Get("Content-Disposition") != "attachment" {
 		t.Fatal(r.headers)
 	}
+	if r := f.raw("HEAD", "/a/"+id+"/", nil, nil); r.status != 200 || len(r.body) != 0 || r.headers.Get("Content-Length") == "" {
+		t.Fatal(r.status, r.headers, string(r.body))
+	}
 	if r := f.get("/a/"+id+"/"+pages.ReservedDir+"/version", nil); r.status != 200 || !bytes.HasPrefix(r.body, []byte(`{"version": "`)) {
 		t.Fatal(string(r.body))
 	}
@@ -559,6 +562,36 @@ func TestArtifactShortLinks(t *testing.T) {
 	}
 	if r := f.get("/api/artifacts", nil); r.status != 500 {
 		t.Fatal(r.status)
+	}
+}
+
+func TestArtifactVideoRange(t *testing.T) {
+	f := startServer(t, makeTool(t))
+	dir := filepath.Join(testutil.TempDir(t), "video")
+	writeFile(t, filepath.Join(dir, "demo.mp4"), "0123456789")
+	record, _, err := pages.Publish(pages.DefaultRegistry(f.tool), filepath.Join(dir, "demo.mp4"), "", nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := pages.Str(record, "id")
+	base := "/a/" + id + "/"
+	if r := f.get(base, nil); r.status != 302 || r.headers.Get("Location") != "/read.html?a="+id {
+		t.Fatal(r.status, r.headers)
+	}
+	if r := f.get(base+pages.ViewRoute, nil); r.status != 200 || string(r.body) != "# demo\n\n![demo](demo.mp4)\n" {
+		t.Fatal(r.status, string(r.body))
+	}
+	r := f.get(base+"demo.mp4", map[string]string{"Range": "bytes=2-5"})
+	if r.status != 206 || string(r.body) != "2345" || r.headers.Get("Content-Range") != "bytes 2-5/10" ||
+		r.headers.Get("Accept-Ranges") != "bytes" || r.headers.Get("Content-Type") != "video/mp4" ||
+		r.headers.Get("Content-Security-Policy") != pages.PagePolicy || r.headers.Get("X-Content-Type-Options") != "nosniff" {
+		t.Fatal(r.status, r.headers, string(r.body))
+	}
+	if r := f.get(base+"demo.mp4", nil); r.status != 200 || string(r.body) != "0123456789" || r.headers.Get("Content-Disposition") != "" {
+		t.Fatal(r.status, r.headers, string(r.body))
+	}
+	if r := f.raw("HEAD", base+"demo.mp4", nil, nil); r.status != 200 || len(r.body) != 0 || r.headers.Get("Content-Length") != "10" {
+		t.Fatal(r.status, r.headers, string(r.body))
 	}
 }
 

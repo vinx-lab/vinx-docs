@@ -422,6 +422,11 @@ func ValidateProject(value any, protectedPorts []any) ([]Root, error) {
 	if err != nil {
 		return nil, err
 	}
+	if value, present := project.Get("public"); present {
+		if _, ok := value.(bool); !ok {
+			return nil, Errorf("项目public必须是布尔值")
+		}
+	}
 	var excludes []any
 	if raw, present := project.Get("exclude"); present {
 		list, ok := raw.([]any)

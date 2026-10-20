@@ -25,8 +25,8 @@
   }
 
   async function api(path, body) {
-    const options = body === undefined ? { cache: 'no-store', credentials: 'omit' }
-      : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store', credentials: 'omit' };
+    const options = body === undefined ? { cache: 'no-store' }
+      : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' };
     let response;
     try { response = await fetch(path, options); } catch (_) { throw new Error('连不上 Vinx Docs 服务，内容还在编辑器里，稍后再保存。'); }
     let data = {};

@@ -42,7 +42,7 @@
   }
 
   async function call(endpoint, body, method = 'POST') {
-    const options = { method, cache: 'no-store', credentials: 'omit' };
+    const options = { method, cache: 'no-store' };
     if (method === 'POST') {
       options.headers = { 'Content-Type': 'application/json' };
       options.body = JSON.stringify(body || {});
@@ -270,6 +270,11 @@
     }
     const selectedTypes = () => typeInputs.filter(box => box.checked).map(box => box.value);
 
+    const publicRow = el('label', 'switch-row');
+    const publicBox = document.createElement('input');
+    publicBox.type = 'checkbox'; publicBox.checked = Boolean(project.public);
+    publicRow.append(publicBox, el('span', '', '公开阅读（经反向代理来的访问者不登录也能阅读这个项目；编辑和批注仍要登录）'));
+
     const actions = document.createElement('div');
     actions.className = 'card-actions';
     const save = document.createElement('button'); save.type = 'button'; save.textContent = '保存并同步';
@@ -321,12 +326,12 @@
       detail.append(warn);
     }
 
-    detail.append(rootsLabel, label, unusedNote, typeBox, actions, note);
+    detail.append(rootsLabel, label, unusedNote, typeBox, publicRow, actions, note);
     detail.append(detailBlock('疑似含明文口令的已收录文件', project.warnings, '没有命中。'));
     detail.append(detailBlock('被排除的条目', project.skipped, '没有条目被排除。'));
     detail.append(danger);
 
-    const read = () => JSON.stringify([nameInput.value, rootsInput.value, excludes.value, selectedTypes()]);
+    const read = () => JSON.stringify([nameInput.value, rootsInput.value, excludes.value, selectedTypes(), publicBox.checked]);
     draft = { read, initial: read() };
 
     save.addEventListener('click', async () => {
@@ -345,6 +350,7 @@
           roots,
           exclude: excludes.value.split('\n').map(line => line.trim()).filter(Boolean),
           types: selectedTypes(),
+          public: publicBox.checked,
         });
         const saved = `已保存：${result.fileCount} 个文件，排除 ${result.skippedCount} 个条目，复用 ${result.reusedCount} 个未变更文件。`;
         const stale = result.projects.find(item => item.id === project.id)?.unusedExclude || [];
@@ -383,10 +389,50 @@
       else field.value = config.settings[key];
     }
     renderProjects();
+    renderAccess(config.auth);
     const info = await call('/api/status', null, 'GET');
     if (info.version) document.getElementById('app-version').textContent = 'v' + info.version;
     renderStats(info);
   }
+
+  // 外部访问：密码、外部域名、短链接免登录时长。
+  const accessStatus = document.getElementById('access-status');
+  const accessMessage = (text, state = '') => {
+    accessStatus.textContent = text; accessStatus.dataset.state = state; accessStatus.hidden = !text;
+  };
+  function renderAccess(info) {
+    if (!info) return;
+    document.getElementById('auth-state').textContent = info.passwordSet
+      ? `已设置访问密码 · ${info.sessionCount} 个有效登录`
+      : '尚未设置访问密码：外部访问者无法登录，只能看免登录的内容。';
+    document.getElementById('external-hosts').value = (info.externalHosts || []).join('\n');
+    document.getElementById('link-hours').value = info.linkHours;
+  }
+  document.getElementById('password-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const input = document.getElementById('new-password');
+    try {
+      renderAccess(await call('/api/auth/password', { password: input.value }));
+      input.value = '';
+      accessMessage('密码已设置，原有登录已全部注销。', 'success');
+    } catch (error) { accessMessage(error.message, 'error'); }
+  });
+  document.getElementById('logout-all').addEventListener('click', async () => {
+    try {
+      renderAccess(await call('/api/auth/logout-all', {}));
+      accessMessage('已注销所有登录。', 'success');
+    } catch (error) { accessMessage(error.message, 'error'); }
+  });
+  document.getElementById('access-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    try {
+      renderAccess(await call('/api/auth/settings', {
+        externalHosts: document.getElementById('external-hosts').value.split('\n').map(line => line.trim()).filter(Boolean),
+        linkHours: Number(document.getElementById('link-hours').value),
+      }));
+      accessMessage('外部访问设置已保存。', 'success');
+    } catch (error) { accessMessage(error.message, 'error'); }
+  });
 
   settingsForm.addEventListener('submit', async event => {
     event.preventDefault();

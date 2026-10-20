@@ -18,6 +18,7 @@ Vinx Docs 是在用户本地运行的文档与页面服务。命令统一用 `vi
 1. **页面写在项目里**：放在项目的 `docs/` 下，或者本来就在的位置（比如测试截图目录）；没有项目时放临时目录。
    - 一个页面一个目录，入口是 `.html`；css、js、图片、json 都用**相对路径**引用（`img/a.png`、`./data.json`）。
    - **Markdown 也能直接发布**：入口写 `.md`，短链接打开单文件阅读页（渲染同文档阅读页，批注和编辑写回源 Markdown）。自动收它引用的图片；链接到的其他文件不收，需要时用 `--file` 加入。不要为此登记文档项目。
+   - **图片和音视频**（`.png` `.jpg` `.gif` `.webp` `.svg` `.mp4` `.webm` `.mp3` `.wav`）：可以直接作入口发布，短链接打开和 Markdown 一样的阅读页（有顶栏，可批注）；也可以在页面里用 `<video src>` 引用，或在 Markdown 里写 `![说明](demo.mp4)` / `<video src>` 内嵌播放。支持 `Range`，可拖动进度。
    - 临时目录（如 `/tmp`）重启后会清空，链接随之失效；要长期看的页面放在项目里。
    - 不引用外部 CDN 或字体，发布后浏览器会拦截外部地址；站点绝对路径（`/x.png`）也找不到。
    - 页面在沙箱里运行，`localStorage`、cookie 不可用。
@@ -25,18 +26,19 @@ Vinx Docs 是在用户本地运行的文档与页面服务。命令统一用 `vi
 
 2. **发布**：
    ```bash
-   vinx-docs publish <入口.html 或 .md> [--title 标题] [--file 相对路径 ...] [--root 目录]
+   vinx-docs publish <入口.html、.md、图片或音视频> [--title 标题] [--file 相对路径 ...] [--root 目录]
    ```
    - 文件清单从入口页开始自动收集：HTML 的 `src`/`href`/`srcset`、CSS 的 `url()`/`@import`、JS 的相对 `import` 和 `fetch('...')`/`new URL('...')` 里的字面量。
    - 用变量拼出来的路径扫不到，用 `--file` 补上（可以重复写）。
    - 引用了入口页上层目录的文件时会报错，这时用 `--root` 指定更上层的目录作为根。
    - 同一个入口页重复发布，短码不变，只更新标题和清单。取消后再发布会拿到新短码。
-   - 加 `--json` 输出结构化结果，字段：`id`、`url`、`list`、`title`、`root`、`files`、`notes`（提示数组）、`reachable`（布尔）、`service`。
+   - 加 `--json` 输出结构化结果，字段：`id`、`url`、`list`、`title`、`root`、`files`、`notes`（提示数组）、`reachable`（布尔）、`service`、`externalUrl`（外网链接，后台没登记外部域名时为空）。
 
 3. **看输出，别跳过**。正常输出如下：
    ```
    已发布：界面截图
    短链接：http://my-host:8000/a/pcmx5m/
+   外网链接：https://docs.example.com/a/pcmx5m/（发布后 24 小时内免登录，之后需登录）
    页面列表：http://my-host:8000/published.html
    根目录：/home/me/projects/myapp/test/snapshots
    文件（12）：index.html、idle.png、preheat.png …
@@ -50,9 +52,9 @@ Vinx Docs 是在用户本地运行的文档与页面服务。命令统一用 `vi
 
 4. **挂上批注监听**（仅 Claude Code，见第三节；一次发布多个页面时，用一个监听写多个 `--scope`），然后用**一行**回复用户，不附页面列表、文件清单等说明：
    ```
-   已发布「界面截图」：http://my-host:8000/a/pcmx5m/
+   已发布「界面截图」：http://my-host:8000/a/pcmx5m/ · 外网 https://docs.example.com/a/pcmx5m/
    ```
-   有需要处理的 `提示：`，或者发布失败时，才另外补一句。
+   输出里没有 `外网链接：` 时只给短链接。有需要处理的 `提示：`，或者发布失败时，才另外补一句。
 
 **改内容**：直接改源文件，不用重新发布，页面约 2 秒内会自动刷新。服务端会在每个 HTML 末尾插入 `<script src="/assets/artifact-live.js" …>`，这是正常现象，源文件本身不会被改。**新增了文件**时重新发布一次。
 **列出 / 取消**：`vinx-docs artifacts`（各列依次是短码、发布时间、标题、链接）；`vinx-docs unpublish <短码>`，只删登记，不删源文件，只在用户要求时取消。
@@ -108,5 +110,5 @@ Monitor(command: "vinx-docs watch --scope path:<项目目录>", description: "Vi
 
 - 只发布用户要看的页面。不要为了「方便」把整个项目目录或含业务数据的文件列进清单。
 - 隐藏文件、凭据文件和 SSH 配置、含私钥的文件一律拒绝发布，也不能在页面上编辑。
-- 服务不设登录，能访问的设备都能看，也能在页面上编辑已发布的源文件。它不是私密空间，不要发布口令、令牌等敏感内容。
+- 内网直连不设登录，能访问的设备都能看，也能在页面上编辑已发布的源文件。它不是私密空间，不要发布口令、令牌等敏感内容。
 - 不用在线 artifact、Gist 或其他外部托管，除非用户明确要求。

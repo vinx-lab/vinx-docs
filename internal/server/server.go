@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/vinx-lab/vinx-docs/internal/api"
+	"github.com/vinx-lab/vinx-docs/internal/auth"
 	"github.com/vinx-lab/vinx-docs/internal/build"
 	"github.com/vinx-lab/vinx-docs/internal/config"
 	"github.com/vinx-lab/vinx-docs/internal/ojson"
@@ -70,7 +71,7 @@ var readEndpoints = map[string]bool{"/api/healthz": true, "/api/status": true, "
 var writeEndpoints = map[string]api.RouteSpec{
 	"/api/refresh":        {Limit: 65536},
 	"/api/projects":       {Required: []string{"docsPath"}, Limit: 65536},
-	"/api/project/update": {Required: []string{"id"}, Optional: []string{"name", "exclude", "roots", "types"}, Limit: 65536},
+	"/api/project/update": {Required: []string{"id"}, Optional: []string{"name", "exclude", "roots", "types", "public"}, Limit: 65536},
 	"/api/project/remove": {Required: []string{"id"}, Limit: 65536},
 	"/api/settings":       {Optional: config.DefaultSettings().Keys(), Limit: 65536},
 }
@@ -105,6 +106,7 @@ type Server struct {
 	Lock         *OpLock
 	Auto         *AutoSync
 	Vinx         *api.API
+	Auth         *auth.Store
 
 	Host     string // 监听的地址（配置里的原值，如 0.0.0.0）
 	Port     int    // 实际端口（传 0 时是系统分配的端口）
@@ -166,6 +168,10 @@ func Create(root string, host *string, port *int) (*Server, error) {
 	if port != nil {
 		p = *port
 	}
+	store, err := auth.Open(root)
+	if err != nil {
+		return nil, err
+	}
 	listener, err := net.Listen("tcp4", net.JoinHostPort(h, strconv.Itoa(p)))
 	if err != nil {
 		return nil, config.Errorf("无法监听 %s:%d：%s（端口可能已被占用，可在配置的 server.port 里换一个）", h, p, strerror(err))
@@ -176,6 +182,7 @@ func Create(root string, host *string, port *int) (*Server, error) {
 		Output:       config.SitePath(root),
 		RegistryPath: pages.DefaultRegistry(root),
 		Lock:         &OpLock{},
+		Auth:         store,
 		Host:         h,
 		Port:         listener.Addr().(*net.TCPAddr).Port,
 		listener:     listener,
@@ -227,6 +234,9 @@ type request struct {
 	path   string // urlsplit(self.path).path
 	query  string
 	isHead bool
+	// external 是经反向代理来的请求；authed 是外部请求带了有效会话。
+	external bool
+	authed   bool
 }
 
 // splitTarget 拆分请求目标：开头的多个 / 合并成一个（避免被当成 //host 形式的网络路径），
@@ -248,6 +258,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	full, path, query := splitTarget(r.RequestURI)
 	q := &request{s: s, w: w, r: r, full: full, path: path, query: query, isHead: r.Method == http.MethodHead}
 	w.Header()["Server"] = []string{"VinxDocs"}
+	if q.external = s.isExternal(r); q.external {
+		q.authed = s.Auth.Valid(q.sessionToken())
+		if !q.gate() {
+			return
+		}
+	}
 	switch r.Method {
 	case http.MethodGet:
 		q.doGet()
@@ -369,6 +385,9 @@ func (q *request) serveStatic(rawPath string) {
 		q.sendPlain(404, "Not Found")
 		return
 	}
+	if q.serveGuestData(target, path) {
+		return
+	}
 	area := projectArea.FindStringSubmatch(path)
 	suffix := textutil.Lower(textutil.Suffix(target))
 	headers := []string{"X-Content-Type-Options", "nosniff", "Referrer-Policy", "no-referrer", "Cache-Control", "no-cache"}
@@ -397,6 +416,21 @@ func (q *request) serveStatic(rawPath string) {
 		}
 		headers = append(headers, "Content-Security-Policy", policy)
 	}
+	if q.external && area == nil && strings.HasPrefix(contentType, "text/html") {
+		// 外部访问的页面外壳带登录状态标记，内容因人而异，不发 ETag。
+		data, err := os.ReadFile(target)
+		if err != nil {
+			abort()
+		}
+		data = q.markAccess(data)
+		q.setHeaders("Content-Type", contentType, "Content-Length", strconv.Itoa(len(data)))
+		q.setHeaders(headers...)
+		q.w.WriteHeader(200)
+		if !q.isHead {
+			_, _ = q.w.Write(data)
+		}
+		return
+	}
 	file, err := os.Open(target)
 	if err != nil {
 		abort()
@@ -423,18 +457,22 @@ func (q *request) serveStatic(rawPath string) {
 }
 
 func (q *request) doHead() {
-	if strings.HasPrefix(q.path, "/api/") || q.path == "/a" || strings.HasPrefix(q.path, "/a/") {
+	if strings.HasPrefix(q.path, "/api/") {
 		q.sendPlain(405, "Method Not Allowed")
+		return
+	}
+	if q.path == "/a" || strings.HasPrefix(q.path, "/a/") {
+		q.serveArtifact(q.path)
 		return
 	}
 	q.serveStatic(q.path)
 }
 
-// allowed Host 必须存在；要求 Origin 时（或请求带了 Origin 时）必须与 Host 同源。
+// allowed Host 必须存在；要求 Origin 时（或请求带了 Origin 时）必须与 Host 同源（外部请求按转发头里的协议和主机）。
 func (q *request) allowed(requireOrigin bool) bool {
 	host := q.r.Host
 	origins := q.r.Header.Values("Origin")
-	if host == "" || ((requireOrigin || len(origins) > 0) && (len(origins) == 0 || origins[0] != "http://"+host)) {
+	if host == "" || ((requireOrigin || len(origins) > 0) && (len(origins) == 0 || origins[0] != q.scheme()+"://"+q.originHost())) {
 		q.reply(403, errorBody("请通过当前文档站点页面操作"))
 		return false
 	}
@@ -447,7 +485,8 @@ func (q *request) doOptions() {
 	}
 	_, known := writeEndpoints[q.path]
 	_, vinxPost := api.PostRoutes[q.path]
-	if !(readEndpoints[q.path] || known || api.GetRoutes[q.path] || vinxPost) {
+	_, authPost := authPosts[q.path]
+	if !(readEndpoints[q.path] || known || api.GetRoutes[q.path] || vinxPost || authPost || q.path == "/api/auth") {
 		q.reply(404, errorBody("接口不存在"))
 		return
 	}
@@ -458,15 +497,23 @@ func (q *request) doOptions() {
 
 // sendPage 发送短链接页面的响应（带页面专用的安全头）。
 func (q *request) sendPage(status int, body []byte, contentType string, extra ...string) {
-	q.setHeaders("Content-Type", contentType, "Content-Length", strconv.Itoa(len(body)), "Cache-Control", "no-cache",
+	q.setPageHeaders(contentType)
+	q.setHeaders("Content-Length", strconv.Itoa(len(body)))
+	q.setHeaders(extra...)
+	q.w.WriteHeader(status)
+	if !q.isHead {
+		_, _ = q.w.Write(body)
+	}
+}
+
+// setPageHeaders 设置短链接响应共用的类型和安全头。
+func (q *request) setPageHeaders(contentType string) {
+	q.setHeaders("Content-Type", contentType, "Cache-Control", "no-cache",
 		"X-Content-Type-Options", "nosniff", "Referrer-Policy", "no-referrer", "Content-Security-Policy", pages.PagePolicy)
 	// 沙箱页面的 origin 是 null；只对它放开读取，普通站点跨域读不到。
 	if values := q.r.Header.Values("Origin"); len(values) > 0 && values[0] == "null" {
 		q.setHeaders("Access-Control-Allow-Origin", "null")
 	}
-	q.setHeaders(extra...)
-	q.w.WriteHeader(status)
-	_, _ = q.w.Write(body)
 }
 
 // serveArtifact 按短码读取登记的源文件；只放行文件清单里的条目，每次请求重新校验。
@@ -497,8 +544,8 @@ func (q *request) serveArtifact(path string) {
 		return
 	}
 	rel := textutil.Unquote(parts[3])
-	if rel == "" && pages.IsMarkdown(pages.Str(record, "entry")) {
-		// Markdown 在站点的单文件阅读页里渲染（站点 CSP，可以批注和编辑）；链接仍然是短链接。
+	if entry := pages.Str(record, "entry"); rel == "" && (pages.IsMarkdown(entry) || pages.MediaKind(entry) != "") {
+		// Markdown、图片和音视频在站点的单文件阅读页里展示（站点 CSP，有顶栏、可以批注）；链接仍然是短链接。
 		q.sendPage(302, nil, plain, "Location", pages.ReadURL(id))
 		return
 	}
@@ -509,6 +556,10 @@ func (q *request) serveArtifact(path string) {
 			return
 		}
 		rel = entry
+	}
+	if rel == pages.ViewRoute && pages.MediaKind(pages.Str(record, "entry")) != "" {
+		q.sendPage(200, []byte(pages.MediaView(record)), "text/markdown; charset=utf-8")
+		return
 	}
 	if rel == pages.ReservedDir+"/manifest" {
 		q.sendPage(200, []byte(ojson.DumpsASCII(pages.ReaderManifest(record), -1)), "application/json; charset=utf-8")
@@ -529,24 +580,38 @@ func (q *request) serveArtifact(path string) {
 		q.sendPage(404, missing, plain)
 		return
 	}
+	gone := []byte("源文件已不存在或已不允许发布")
 	source, err := pages.CheckFile(pages.Str(record, "root"), rel)
-	var body []byte
-	if err == nil {
-		body, err = os.ReadFile(source)
-	}
 	if err != nil {
-		q.sendPage(404, []byte("源文件已不存在或已不允许发布"), plain)
+		q.sendPage(404, gone, plain)
 		return
 	}
 	contentType := pages.MimeFor(rel)
 	if strings.HasPrefix(contentType, "text/html") {
-		body = pages.InjectLive(body, pages.Version(record), rel)
+		body, err := os.ReadFile(source)
+		if err != nil {
+			q.sendPage(404, gone, plain)
+			return
+		}
+		q.sendPage(200, pages.InjectLive(body, pages.Version(record), rel), contentType)
+		return
 	}
-	var extra []string
+	// 其余文件流式发送并支持 Range：Safari 不支持 Range 就不播放视频，大文件也不整份读进内存。
+	file, err := os.Open(source)
+	var info os.FileInfo
+	if err == nil {
+		defer file.Close()
+		info, err = file.Stat()
+	}
+	if err != nil {
+		q.sendPage(404, gone, plain)
+		return
+	}
+	q.setPageHeaders(contentType)
 	if contentType == "application/octet-stream" {
-		extra = []string{"Content-Disposition", "attachment"}
+		q.setHeaders("Content-Disposition", "attachment")
 	}
-	q.sendPage(200, body, contentType, extra...)
+	http.ServeContent(q.w, q.r, "", info.ModTime(), file)
 }
 
 // ---------------------------------------------------------------- GET 接口
@@ -574,6 +639,8 @@ func (q *request) doGet() {
 	}
 	// 下面几个接口按完整请求目标比较（带查询串就不匹配）。
 	switch q.full {
+	case "/api/auth":
+		q.reply(200, q.authStatus())
 	case "/api/healthz":
 		q.reply(200, ojson.NewObject("service", Service, "pid", os.Getpid(), "home", q.s.Root, "busy", q.s.Lock.Locked()))
 	case "/api/status":
@@ -586,6 +653,11 @@ func (q *request) doGet() {
 				return
 			}
 			abort()
+		}
+		for _, item := range items {
+			if obj, ok := item.(*ojson.Object); ok {
+				obj.Set("publicUntil", q.s.publicUntil(obj))
+			}
 		}
 		q.reply(200, ojson.NewObject("artifacts", items))
 	case "/api/config":
@@ -704,6 +776,7 @@ func (s *Server) configPayload() *ojson.Object {
 		entry.Set("home", home)
 		entry.Set("exclude", exclude)
 		entry.Set("types", types)
+		entry.Set("public", item.Value("public") == true)
 		entry.Set("url", "/projects/"+textutil.Str(id)+"/")
 		built := report[textutil.Str(id)]
 		for _, pair := range []struct {
@@ -727,6 +800,7 @@ func (s *Server) configPayload() *ojson.Object {
 		"autoSync", ojson.NewObject("mode", mode, "lastError", lastError),
 		"projects", projects,
 		"typeGroups", typeGroupsPayload(),
+		"auth", s.authPayload(),
 	)
 }
 
@@ -807,6 +881,12 @@ func (q *request) doPost() {
 	if !q.allowed(true) {
 		return
 	}
+	if spec, ok := authPosts[q.full]; ok {
+		if body, ok := q.parseBody(spec); ok {
+			q.servePostAuth(body)
+		}
+		return
+	}
 	if spec, ok := api.PostRoutes[q.full]; ok {
 		if body, ok := q.parseBody(spec); ok {
 			q.reply(q.s.Vinx.ServePost(q.full, body))
@@ -864,7 +944,7 @@ func (s *Server) write(path string, body *ojson.Object) (int, any) {
 	case "/api/project/update":
 		results, err = build.UpdateProject(s.ConfigPath, s.Output, idOf(body), build.ProjectUpdate{
 			Name: body.Value("name"), Exclude: body.Value("exclude"), Roots: body.Value("roots"),
-			Types: body.Value("types"),
+			Types: body.Value("types"), Public: body.Value("public"),
 		})
 	case "/api/project/remove":
 		if err = build.Unregister(s.ConfigPath, s.Output, idOf(body)); err == nil {

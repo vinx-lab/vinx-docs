@@ -101,7 +101,8 @@
   function show() {
     const item = items.find(entry => entry.id === selected);
     frame.hidden = !item; empty.hidden = !!item; openNew.hidden = !item;
-    const markdown = item && item.kind === 'markdown';
+    // Markdown、图片和音视频在单文件阅读页里看，批注和编辑在阅读页自己的顶栏里。
+    const markdown = item && !!item.readUrl;
     pickButton.hidden = commentToggle.hidden = editButton.hidden = !item || markdown;
     currentTitle.textContent = item ? item.title : '';
     followNote.textContent = follow ? '有新页面发布时自动切换到最新一个' : '已固定在所选页面；点第一项恢复跟随最新';
@@ -134,7 +135,10 @@
       const meta = document.createElement('span'); meta.className = 'recent-meta';
       meta.textContent = item.root.replace(/^\/home\/[^/]+/, '~') + '/' + item.entry;
       const time = document.createElement('span'); time.className = 'published-time';
-      time.textContent = (item.kind === 'markdown' ? 'Markdown · ' : '') + relative(item.publishedAt) + ' 发布' + (item.missing.length ? ' · 缺失 ' + item.missing.length + ' 个文件' : '');
+      time.textContent = ({ markdown: 'Markdown · ', image: '图片 · ', video: '视频 · ', audio: '音频 · ' }[item.kind] || '') + relative(item.publishedAt) + ' 发布' + (item.missing.length ? ' · 缺失 ' + item.missing.length + ' 个文件' : '');
+      // 经反向代理访问时，发布后一段时间内不登录也能只读打开。
+      const left = (item.publicUntil || 0) - Date.now() / 1000;
+      if (left > 0) time.textContent += ' · 外部免登录还剩 ' + (left >= 3600 ? Math.floor(left / 3600) + ' 小时' : Math.ceil(left / 60) + ' 分钟');
       if (item.missing.length) time.dataset.state = 'warning';
       link.append(title, meta, time);
       link.addEventListener('click', event => {
@@ -148,7 +152,7 @@
 
   async function load() {
     try {
-      const response = await fetch('/api/artifacts', { cache: 'no-store', credentials: 'omit' });
+      const response = await fetch('/api/artifacts', { cache: 'no-store' });
       if (!response.ok) throw new Error();
       const next = (await response.json()).artifacts;
       const changed = JSON.stringify(next) !== JSON.stringify(items);

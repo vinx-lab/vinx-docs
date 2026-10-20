@@ -106,7 +106,7 @@
 
   async function loadPublished() {
     try {
-      const response = await fetch('/api/artifacts', { cache: 'no-store', credentials: 'omit', signal: AbortSignal.timeout(3000) });
+      const response = await fetch('/api/artifacts', { cache: 'no-store', signal: AbortSignal.timeout(3000) });
       if (!response.ok) return;
       artifacts = (await response.json()).artifacts;
       renderPublished();
@@ -115,7 +115,7 @@
 
   async function loadComments() {
     try {
-      const response = await fetch('/api/comments?status=open,sent', { cache: 'no-store', credentials: 'omit', signal: AbortSignal.timeout(3000) });
+      const response = await fetch('/api/comments?status=open,sent', { cache: 'no-store', signal: AbortSignal.timeout(3000) });
       if (!response.ok) return;
       const counts = { doc: {}, a: {} };
       for (const item of (await response.json()).comments || []) {
@@ -153,7 +153,7 @@
       try {
         response = await fetch(endpoint, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body), cache: 'no-store', credentials: 'omit',
+          body: JSON.stringify(body), cache: 'no-store',
         });
       } catch (_) {
         throw new Error('无法连接管理接口；操作可能仍在进行，请稍后重新同步确认。');
@@ -237,16 +237,21 @@
   }
 
   try { await loadProjects(); } catch (error) { container.textContent = error.message; }
+  // 未登录的外部访问者只能读公开项目，管理接口都会返回 401，不必再请求。
+  if (window.VinxAuth && window.VinxAuth.guest) {
+    if (!projects.length) container.textContent = '没有公开的项目。登录后可以看到全部项目。';
+    return;
+  }
   loadPublished();
   loadComments();
   // 顶栏「批注」上显示未解决数量，一眼知道有没有待办。
-  fetch('/api/agents', { cache: 'no-store', credentials: 'omit' }).then(r => r.ok ? r.json() : null).then(info => {
+  fetch('/api/agents', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(info => {
     if (!info) return;
     const active = info.counts.open + info.counts.sent;
     if (active) document.getElementById('comments-link').textContent = '批注 ' + active;
   }).catch(() => {});
   try {
-    const response = await fetch('/api/status', { cache: 'no-store', credentials: 'omit', signal: AbortSignal.timeout(3000) });
+    const response = await fetch('/api/status', { cache: 'no-store', signal: AbortSignal.timeout(3000) });
     if (!response.ok) throw new Error();
     const info = await response.json();
     if (info.service !== 'vinx-docs') throw new Error();

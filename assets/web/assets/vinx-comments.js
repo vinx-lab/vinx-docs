@@ -34,8 +34,10 @@
     const composeAnchor = el('div', 'vinx-anchor');
     const composeText = el('textarea'); composeText.rows = 4; composeText.placeholder = '写下问题或修改要求，例如：这个圆太大了，改成 32px，和标题对齐';
     const composeActions = el('div', 'vinx-actions');
-    const saveOnly = button('保存批注'), saveSend = button('保存并交给 agent', 'primary-button'), cancel = button('取消');
-    composeActions.append(saveSend, saveOnly, cancel);
+    // 习惯是逐条保存、写完后「全部交给 agent」，所以保存是主按钮，Ctrl+Enter 也只保存。
+    const saveOnly = button('保存批注', 'primary-button'), saveSend = button('保存并交给 agent'), cancel = button('取消');
+    saveOnly.title = '存为待处理（Ctrl+Enter），写完后用「全部交给 agent」一次提交';
+    composeActions.append(saveOnly, saveSend, cancel);
     compose.append(el('strong', '', '新批注'), composeAnchor, composeText, composeActions);
     const tools = el('label', 'vinx-show-resolved');
     const showResolved = el('input'); showResolved.type = 'checkbox';
@@ -43,8 +45,12 @@
     const toolsRow = el('div', 'vinx-tools');
     const whole = button(options.wholeLabel || '对整个页面写批注');
     whole.addEventListener('click', () => { const t = options.wholeTarget && options.wholeTarget(); if (t) startCompose(t.target, t.anchor, t.label); });
+    // 习惯先把批注都写完（只保存），最后一次交给 agent。
+    const sendAll = button('全部交给 agent', 'primary-button'); sendAll.hidden = true;
+    sendAll.addEventListener('click', () => sendOpen());
     toolsRow.append(tools);
     if (options.wholeTarget) toolsRow.append(whole);
+    toolsRow.append(sendAll);
     const list = el('div', 'vinx-list');
     const status = el('p', 'vinx-status'); status.setAttribute('role', 'status');
     drawer.append(head, agents, compose, toolsRow, status, list);
@@ -58,7 +64,8 @@
       if (value) refresh();
       loop();  // 打开时改成4秒一轮，关上后回到15秒
     }
-    closeButton.addEventListener('click', () => { setOpen(false); cancelCompose(); });
+    // 关上抽屉不丢正在写的批注，再打开还在；要丢弃点「取消」。
+    closeButton.addEventListener('click', () => setOpen(false));
     showResolved.addEventListener('change', render);
 
     function cancelCompose() { pending = null; compose.hidden = true; composeText.value = ''; options.onCompose && options.onCompose(null); }
@@ -72,14 +79,17 @@
         if (send) item = await api('/api/comment/update', { id: item.id, action: 'send' });
         focused = item.id; cancelCompose();
         await refresh();
-        say(send ? `批注 #${item.id} 已交给 agent。${deliveryText(item)}` : `批注 #${item.id} 已保存。`);
+        say(send ? `批注 #${item.id} 已交给 agent。${deliveryText(item)}` : `批注 #${item.id} 已保存为待处理；写完后点「全部交给 agent」一次提交。`);
       } catch (error) { say(error.message, 'error'); }
       finally { saveOnly.disabled = saveSend.disabled = false; }
     }
     saveOnly.addEventListener('click', () => submit(false));
     saveSend.addEventListener('click', () => submit(true));
     compose.addEventListener('submit', event => { event.preventDefault(); submit(false); });
-    composeText.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') submit(true); });
+    composeText.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') submit(false); });
+    const unsaved = () => !compose.hidden && !!pending && !!composeText.value.trim();
+    // 有没保存的批注时，刷新或关闭页面先提示。
+    addEventListener('beforeunload', event => { if (unsaved()) { event.preventDefault(); event.returnValue = ''; } });
 
     function say(text, state) { status.textContent = text || ''; status.dataset.state = state || ''; }
 
@@ -90,6 +100,21 @@
         await refresh();
         if (action === 'send') say(`批注 #${item.id} 已交给 agent。${deliveryText(result)}`);
       } catch (error) { say(error.message, 'error'); }
+    }
+
+    async function sendOpen() {
+      if (!compose.hidden && composeText.value.trim()) { say('先保存或取消正在写的批注。', 'error'); composeText.focus(); return; }
+      // 按编号从小到大交出，agent 按写的顺序处理。
+      const open = items.filter(item => item.status === 'open').sort((a, b) => a.id - b.id);
+      if (!open.length) return;
+      sendAll.disabled = true;
+      const done = [];
+      try {
+        for (const item of open) { await api('/api/comment/update', { id: item.id, action: 'send' }); done.push(item.id); }
+        say(`${done.length} 条批注已交给 agent：` + done.map(id => '#' + id).join('、'));
+      } catch (error) {
+        say((done.length ? `已交出 ${done.length} 条，其余失败：` : '') + error.message, 'error');
+      } finally { sendAll.disabled = false; await refresh(); }
     }
 
     function card(item) {
@@ -143,6 +168,9 @@
       for (const item of visible) list.append(card(item));
       if (!visible.length) list.append(el('p', 'vinx-empty', items.length ? '没有未解决的批注。' : '还没有批注。' + (options.hint || '')));
       const active = items.filter(item => item.status !== 'resolved').length;
+      const open = items.filter(item => item.status === 'open').length;
+      sendAll.hidden = !open; sendAll.textContent = `全部交给 agent（${open}）`;
+      sendAll.title = open ? `把 ${open} 条待处理批注一次交给 agent` : '';
       heading.textContent = (options.title || '批注') + (active ? ` · ${active} 条未解决` : '');
       if (options.badge) { options.badge.textContent = active ? `批注 ${active}` : '批注'; options.badge.dataset.count = active; }
       const target = list.querySelector('.vinx-card.focused');
@@ -170,7 +198,17 @@
     loop();
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 
-    function startCompose(target, anchor, label) {
+    async function startCompose(target, anchor, label) {
+      // 上一条写了还没保存就去选别的地方：先把它存成待处理，不让它被新的一条顶掉。
+      if (unsaved()) {
+        const draft = pending; pending = null;  // 先摘下来，连点两次也只存一份
+        try {
+          const item = await api('/api/comments', { target: draft.target, anchor: draft.anchor, body: composeText.value.trim() });
+          say(`上一条已自动保存为批注 #${item.id}（待处理）。`);
+          refresh();
+        } catch (error) { pending = draft; say('上一条没能自动保存：' + error.message, 'error'); setOpen(true); composeText.focus(); return; }
+      }
+      composeText.value = '';
       pending = { target, anchor };
       composeAnchor.textContent = label;
       compose.hidden = false; setOpen(true);

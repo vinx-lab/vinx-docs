@@ -117,6 +117,55 @@ func TestPublishMarkdownCollectsImagesOnly(t *testing.T) {
 	}
 }
 
+func TestPublishVideo(t *testing.T) {
+	doc := tu.TempDir(t)
+	registry := filepath.Join(doc, "reg.json")
+	tu.Write(t, filepath.Join(doc, "media", "demo.mp4"), "mp4 data")
+	tu.Write(t, filepath.Join(doc, "media", "cover.png"), "\x89PNG")
+	tu.Write(t, filepath.Join(doc, "media", "voice.mp3"), "mp3 data")
+	tu.Write(t, filepath.Join(doc, "media", "clip.webm"), "webm data")
+	tu.Write(t, filepath.Join(doc, "demo.md"), "# 演示\n\n![录屏](media/demo.mp4)\n\n"+
+		"<video src=\"media/clip.webm\" poster=\"media/cover.png\" controls></video>\n<audio src=\"media/voice.mp3\"></audio>\n")
+	record, _, err := Publish(registry, filepath.Join(doc, "demo.md"), "", nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := sorted(Files(record)); got != sorted([]string{"demo.md", "media/demo.mp4", "media/clip.webm", "media/cover.png", "media/voice.mp3"}) {
+		t.Fatal(got)
+	}
+	kinds := map[string]string{}
+	for _, item := range ReaderManifest(record).Value("entries").([]any) {
+		kinds[Str(item.(*ojson.Object), "path")] = Str(item.(*ojson.Object), "kind")
+	}
+	if kinds["media/demo.mp4"] != "video" || kinds["media/clip.webm"] != "video" || kinds["media/voice.mp3"] != "audio" || kinds["media/cover.png"] != "image" {
+		t.Fatal(kinds)
+	}
+	// 视频直接作入口：标题取文件名，清单只有它自己。
+	video, _, err := Publish(registry, filepath.Join(doc, "media", "demo.mp4"), "", nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	vid := Str(video, "id")
+	if video.Value("title") != "demo" || video.Value("entry") != "demo.mp4" || len(Files(video)) != 1 ||
+		Summary(video).Value("kind") != "video" || Summary(video).Value("readUrl") != "/read.html?a="+vid {
+		t.Fatal(ojson.Dumps(video, -1))
+	}
+	// 阅读页的正文是生成的，source 指向媒体文件，媒体按文件名相对它解析。
+	manifest := ReaderManifest(video)
+	entries := manifest.Value("entries").([]any)
+	view := entries[len(entries)-1].(*ojson.Object)
+	if manifest.Value("home") != ViewRoute || Str(view, "route") != ViewRoute || Str(view, "source") != "demo.mp4" {
+		t.Fatal(ojson.Dumps(manifest, -1))
+	}
+	if got := MediaView(video); got != "# demo\n\n![demo](demo.mp4)\n" {
+		t.Fatal(got)
+	}
+	cover, _, err := Publish(registry, filepath.Join(doc, "media", "cover.png"), "", nil, "封面 [v2]")
+	if err != nil || Summary(cover).Value("kind") != "image" || MediaView(cover) != "# 封面 [v2]\n\n![封面 v2](cover.png)\n" {
+		t.Fatal(err, MediaView(cover))
+	}
+}
+
 func TestRepublishKeepsShortIDAndPicksUpNewFiles(t *testing.T) {
 	base := tu.TempDir(t)
 	page := tu.MakePage(t, filepath.Join(base, "proto"))

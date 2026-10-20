@@ -216,6 +216,7 @@ type ProjectUpdate struct {
 	Home    any
 	Roots   any
 	Types   any
+	Public  any
 }
 
 // UpdateProject 修改显示名、文档目录、排除规则、收录类型或首页；源文档不受影响。
@@ -322,6 +323,18 @@ func UpdateProject(configPath, output, projectID string, update ProjectUpdate) (
 			target.Set("types", normalized)
 		} else {
 			target.Delete("types")
+		}
+	}
+	if update.Public != nil {
+		public, ok := update.Public.(bool)
+		if !ok {
+			return nil, config.Errorf("public必须是布尔值")
+		}
+		// 公开阅读只影响外部未登录访问者能否读到这个项目，不影响收录范围。
+		if public {
+			target.Set("public", true)
+		} else {
+			target.Delete("public")
 		}
 	}
 	return publishCandidate(configPath, output, cfg, withProjects(cfg, projects))

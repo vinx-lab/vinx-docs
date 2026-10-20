@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vinx-lab/vinx-docs/internal/auth"
 	"github.com/vinx-lab/vinx-docs/internal/server"
 	"github.com/vinx-lab/vinx-docs/internal/testutil"
 )
@@ -36,7 +37,7 @@ func TestHelpAndErrorsAreStable(t *testing.T) {
                          entry
 
 positional arguments:
-  entry          入口 .html 或 .md 文件
+  entry          入口 .html、.md、图片或音视频文件
 
 options:
   -h, --help     show this help message and exit
@@ -207,5 +208,29 @@ func TestServiceRejectsUnknownArguments(t *testing.T) {
 		if code != 2 || !strings.Contains(errOut, "unrecognized arguments: --dryrun") {
 			t.Errorf("%s --dryrun: code=%d stderr=%q", command, code, errOut)
 		}
+	}
+}
+
+func TestExternalLink(t *testing.T) {
+	home := t.TempDir()
+	if url, _ := externalLink(home, "abc123"); url != "" {
+		t.Fatalf("没登记域名时不应给外网链接：%q", url)
+	}
+	store, err := auth.Open(home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.SaveSettings(auth.Settings{ExternalHosts: []string{"Docs.Example.com:443"}, LinkHours: 24}); err != nil {
+		t.Fatal(err)
+	}
+	url, note := externalLink(home, "abc123")
+	if url != "https://docs.example.com/a/abc123/" || !strings.Contains(note, "24 小时内免登录") {
+		t.Fatalf("外网链接不对：%q %q", url, note)
+	}
+	if _, err := store.SaveSettings(auth.Settings{ExternalHosts: []string{"docs.example.com"}, LinkHours: 0}); err != nil {
+		t.Fatal(err)
+	}
+	if _, note := externalLink(home, "abc123"); note != "需登录" {
+		t.Fatalf("linkHours=0 时应提示需登录：%q", note)
 	}
 }

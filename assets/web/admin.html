@@ -7,6 +7,7 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/assets/app.css">
   <script src="/assets/theme.js"></script>
+  <script src="/assets/auth.js"></script>
   <script src="/assets/icons.js" defer></script>
   <script src="/assets/admin.js" defer></script>
 </head>
@@ -86,9 +87,36 @@
       </div>
     </section>
 
+    <section class="hub-section" aria-labelledby="access-heading">
+      <div class="section-head"><h2 id="access-heading">外部访问</h2></div>
+      <div class="admin-card">
+        <p class="card-note">经反向代理（带 <code>X-Forwarded-For</code> 等转发头，或 Host 是下面登记的域名）来的请求按外部访问处理：要登录才能看非公开项目和管理功能；刚发布的短链接和项目设置里勾了「公开阅读」的项目不登录也能只读。内网直连不受影响。密码和这些设置只能在内网修改。</p>
+        <p id="auth-state" class="card-note"></p>
+        <form id="password-form" class="auth-form">
+          <label for="new-password">访问密码（8 到 200 个字符；修改后所有已登录的设备需要重新登录）</label>
+          <div class="auth-row">
+            <input id="new-password" type="password" autocomplete="new-password" minlength="8" maxlength="200" required>
+            <button type="submit">设置密码</button>
+            <button id="logout-all" type="button" class="ghost">注销所有登录</button>
+          </div>
+        </form>
+        <form id="access-form" class="auth-form">
+          <label class="field-block">外部访问用的域名（每行一个；反向代理不带转发头时靠它识别外部请求）
+            <textarea id="external-hosts" rows="2" spellcheck="false" placeholder="docs.example.com"></textarea>
+          </label>
+          <label class="field-row">
+            <span>短链接发布后免登录只读（小时，0 表示一律要登录；重新发布重新计时）</span>
+            <input type="number" id="link-hours" min="0" max="720" step="1">
+          </label>
+          <button type="submit">保存外部访问设置</button>
+        </form>
+        <p id="access-status" class="manage-status card-status" role="status" aria-live="polite" hidden></p>
+      </div>
+    </section>
+
     <footer class="hub-footer">
       <p>强制安全规则不可在后台关闭：隐藏路径、缓存与仓库目录、符号链接、凭据与SSH文件名、不支持的类型、含私钥的文本一律不收录。</p>
-      <p>本站不设登录。能访问本端口的设备都能阅读和管理，请只在受信任的局域网内使用。所有操作只影响 Vinx Docs 自己的配置与阅读副本，不改动项目原文。</p>
+      <p>内网直连不设登录。能直接访问本端口的设备都能阅读和管理，请只在受信任的局域网内使用。所有操作只影响 Vinx Docs 自己的配置与阅读副本，不改动项目原文。</p>
     </footer>
   </main>
 </body>

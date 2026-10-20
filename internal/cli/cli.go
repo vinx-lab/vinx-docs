@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/vinx-lab/vinx-docs/assets"
+	"github.com/vinx-lab/vinx-docs/internal/auth"
 	"github.com/vinx-lab/vinx-docs/internal/build"
 	"github.com/vinx-lab/vinx-docs/internal/comments"
 	"github.com/vinx-lab/vinx-docs/internal/config"
@@ -47,7 +48,7 @@ var groups = []group{
 		{"settings", "修改自动同步等设置"},
 	}},
 	{"页面", "pages", [][2]string{
-		{"publish", "发布一个本地 HTML 页面或 Markdown 文件，得到短链接"},
+		{"publish", "发布一个本地 HTML 页面、Markdown、图片或音视频文件，得到短链接"},
 		{"unpublish", "取消一个短链接，不删源文件"},
 		{"artifacts", "列出已发布的页面"},
 	}},
@@ -303,7 +304,7 @@ func coreMain(args []string) int {
 func pagesParser() *Parser {
 	p := &Parser{Prog: "vinx-docs", Args: []*Arg{{Flag: "--registry", Dest: "registry", Type: "path"}}}
 	p.Sub("publish",
-		&Arg{Dest: "entry", Type: "path", Help: "入口 .html 或 .md 文件"},
+		&Arg{Dest: "entry", Type: "path", Help: "入口 .html、.md、图片或音视频文件"},
 		&Arg{Flag: "--root", Dest: "root", Type: "path", Help: "文件清单的根目录，默认是入口页所在目录"},
 		&Arg{Flag: "--file", Dest: "file", Action: "append", Help: "额外发布的文件（相对根目录），可重复"},
 		&Arg{Flag: "--title", Dest: "title"},
@@ -312,6 +313,23 @@ func pagesParser() *Parser {
 	p.Sub("unpublish", &Arg{Dest: "id"})
 	p.Sub("artifacts", &Arg{Flag: "--json", Dest: "json", Action: "store_true"})
 	return p
+}
+
+// externalLink 按后台登记的第一个外部域名拼出经反向代理访问的短链接；没登记域名时返回空。
+func externalLink(home, id string) (string, string) {
+	store, err := auth.Open(home)
+	if err != nil {
+		return "", ""
+	}
+	settings := store.Settings()
+	if len(settings.ExternalHosts) == 0 {
+		return "", ""
+	}
+	note := "需登录"
+	if settings.LinkHours > 0 {
+		note = fmt.Sprintf("发布后 %d 小时内免登录，之后需登录", settings.LinkHours)
+	}
+	return "https://" + settings.ExternalHosts[0] + "/a/" + id + "/", note
 }
 
 // finishCommand 是页面和批注命令的错误处理：配置错误回 2，其他回 1。
@@ -349,6 +367,10 @@ func pagesMain(args []string) int {
 			reachable, state = pages.Probe(home, id)
 		}
 		fileList := pages.Files(record)
+		external, externalNote := "", ""
+		if !custom {
+			external, externalNote = externalLink(home, id)
+		}
 		if values.Bool("json") {
 			noteList := []any{}
 			for _, note := range notes {
@@ -356,10 +378,13 @@ func pagesMain(args []string) int {
 			}
 			fmt.Fprintln(stdout, ojson.Dumps(ojson.NewObject("id", id, "url", url, "list", base+"/published.html",
 				"title", record.Value("title"), "root", record.Value("root"), "files", record.Value("files"),
-				"notes", noteList, "reachable", reachable, "service", state), 2))
+				"notes", noteList, "reachable", reachable, "service", state, "externalUrl", external), 2))
 		} else {
 			fmt.Fprintf(stdout, "已发布：%s\n", textutil.Str(record.Value("title")))
 			fmt.Fprintf(stdout, "短链接：%s\n", url)
+			if external != "" {
+				fmt.Fprintf(stdout, "外网链接：%s（%s）\n", external, externalNote)
+			}
 			fmt.Fprintf(stdout, "页面列表：%s/published.html\n", base)
 			fmt.Fprintf(stdout, "根目录：%s\n", textutil.Str(record.Value("root")))
 			shown := fileList

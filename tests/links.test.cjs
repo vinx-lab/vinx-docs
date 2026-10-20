@@ -8,7 +8,9 @@ const manifest = { home: 'README.md', entries: [
   { path: '指南/中文 文件.md', kind: 'markdown', route: '指南/中文 文件.md', url: '/projects/demo/raw/x.md' },
   { path: 'data.json', kind: 'text', route: '__previews/data.json.md', url: '/projects/demo/raw/data.json' },
   { path: 'report.html', kind: 'html', route: null, url: '/projects/demo/raw/report.html', previewUrl: '/projects/demo/preview/report.html' },
-  { path: '需求.xlsx', kind: 'download', route: null, url: '/projects/demo/raw/%E9%9C%80%E6%B1%82.xlsx' }
+  { path: '需求.xlsx', kind: 'download', route: null, url: '/projects/demo/raw/%E9%9C%80%E6%B1%82.xlsx' },
+  { path: 'demo.mp4', kind: 'video', url: '/a/x/demo.mp4' },
+  { path: 'voice.mp3', kind: 'audio', url: '/a/x/voice.mp3' }
 ] };
 function resolve(href, current = 'README.md') {
   assert.ok(fs.existsSync(modulePath), '链接解析模块尚未实现');
@@ -25,6 +27,10 @@ test('HTML预览和Excel下载按允许条目分流', () => {
   assert.equal(resolve('report.html').type, 'html');
   assert.equal(resolve('report.html').href, '/projects/demo/preview/report.html');
   assert.equal(resolve('需求.xlsx').type, 'download');
+});
+test('视频和音频条目返回各自类型', () => {
+  assert.deepEqual(resolve('demo.mp4'), { type: 'video', href: '/a/x/demo.mp4' });
+  assert.deepEqual(resolve('voice.mp3'), { type: 'audio', href: '/a/x/voice.mp3' });
 });
 test('越界、编码穿越、脚本链接和未注册文件被阻止', () => {
   for (const href of ['../README.md', '%2e%2e/README.md', 'javascript:alert(1)', '//evil.example/a', '/prod-api/getInfo', 'secret.env', 'foo\\README.md']) {

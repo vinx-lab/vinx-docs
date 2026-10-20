@@ -112,7 +112,7 @@ SheetJS 在 npm 上停留在 0.18.5 且有已知 CVE，官方发布已迁至 cdn
 
 ## 管理接口
 
-浏览器只请求同一站点的 `/api/`。写接口要求 POST、`application/json`、同源 `Origin`，并逐个声明允许的字段，多一个未知字段就拒绝。不提供任意命令执行、目录浏览或通用文件读取接口。按单人自用场景，不设账号，也不区分本机和远程。
+浏览器只请求同一站点的 `/api/`。写接口要求 POST、`application/json`、同源 `Origin`，并逐个声明允许的字段，多一个未知字段就拒绝。不提供任意命令执行、目录浏览或通用文件读取接口。内网直连不设账号；经反向代理的外部访问见下一节。
 
 | 动作 | 预期语义 | 不允许的附带动作 |
 | --- | --- | --- |
@@ -120,6 +120,37 @@ SheetJS 在 npm 上停留在 0.18.5 且有已知 CVE，官方发布已迁至 cdn
 | 同步 | 生成/更新收录文档与索引 | 改写原文 |
 | 取消接入 | 移除导航、索引和生成副本 | 删除原项目文件或 Git 记录 |
 | 保存（页面内编辑） | 版本检查、原子写入、保存前留历史 | 批量改写、自动提交 Git |
+
+## 经反向代理对外访问
+
+同一个端口同时服务内网和反向代理。服务按请求判断是不是外部访问，外部访问要登录（单个密码）：
+
+- 请求带 `X-Forwarded-For`、`X-Forwarded-Host`、`X-Forwarded-Proto`、`Forwarded`、`X-Real-IP` 中任一个，或 `Host` 是管理后台「外部访问」里登记的域名，就按外部处理。不按来源 IP 判断：反代多半经内网或 tailnet 连进来，来源地址看起来就是内网。
+- 未登录可以看：首页和阅读页外壳、`/assets/` `/vendor/`、标为「公开阅读」的项目、发布后 `linkHours` 小时内（默认 24，重新发布重新计时）的短链接。项目清单和跨项目搜索索引只返回公开项目。其余页面跳转登录页，`/api/` 返回 401。未登录时页面隐藏编辑、批注和管理入口。
+- 没设密码时外部无法登录，只能看上面免登录的内容。
+- 密码以 PBKDF2-SHA256 摘要存放在家目录 `config/auth.json`，会话令牌只存摘要（`config/sessions.json`），都是 0600。会话 30 天，改密码时全部失效。同一来源连续 5 次登录失败或猜错 5 个短码，锁 15 分钟。
+- 密码、外部域名和免登录时长只能在内网的管理后台修改。
+
+反代要求（Caddy、Nginx 都适用）：
+
+1. 只用 HTTPS 对外。转发 `X-Forwarded-Proto`，服务据此给 Cookie 加 `Secure`，并按 `https://<域名>` 校验写操作的 `Origin`。
+2. 转发 `X-Forwarded-For`（Caddy 默认会加；Nginx 要写 `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`）。登录失败限流按它的最后一项计来源。
+3. 保留原始 `Host`，或者转发 `X-Forwarded-Host`（Nginx 写 `proxy_set_header Host $host;`）。
+4. 同时在后台登记外部域名。这样即使反代漏了转发头，只要 `Host` 是这个域名，也会按外部处理。
+
+Nginx 示例：
+
+```nginx
+location / {
+    proxy_pass http://<服务地址>:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_buffering off;   # 视频拖动、版本轮询更及时
+}
+```
+
+接好后在外网验证：未登录打开 `/api/config` 应返回 401，打开 `/admin.html` 应跳转登录页。
 
 ## 验收清单
 

@@ -43,6 +43,26 @@ var pageSuffixes = map[string]bool{".html": true, ".htm": true}
 // markdownSuffixes 是可以作为入口的 Markdown 文件；这类发布在站点的单文件阅读页里渲染。
 var markdownSuffixes = map[string]bool{".md": true, ".markdown": true}
 
+// mediaSuffixes 是可以直接作为入口的图片和音视频；和 Markdown 一样在单文件阅读页里展示。
+var mediaSuffixes = map[string]string{
+	".png": "image", ".jpg": "image", ".jpeg": "image", ".gif": "image", ".webp": "image", ".svg": "image",
+	".mp4": "video", ".webm": "video", ".mp3": "audio", ".wav": "audio",
+}
+
+// MediaKind 返回 "image"、"video"、"audio"，不是可作入口的媒体时为空。
+func MediaKind(rel string) string { return mediaSuffixes[textutil.Lower(textutil.Suffix(rel))] }
+
+// ViewRoute 是媒体入口在阅读页里的正文路由，内容由 MediaView 生成，不是源文件。
+const ViewRoute = ReservedDir + "/view.md"
+
+// MediaView 生成媒体入口的阅读页正文：标题加这一个媒体。地址相对媒体文件本身（阅读页按它解析）。
+func MediaView(record *ojson.Object) string {
+	entry := Str(record, "entry")
+	title := Str(record, "title")
+	alt := strings.NewReplacer("[", "", "]", "", "\n", " ").Replace(title)
+	return "# " + title + "\n\n![" + alt + "](" + textutil.Quote(entry[strings.LastIndex(entry, "/")+1:], "") + ")\n"
+}
+
 // IsMarkdown 报告文件是否按 Markdown 处理。
 func IsMarkdown(rel string) bool { return markdownSuffixes[textutil.Lower(textutil.Suffix(rel))] }
 
@@ -314,24 +334,28 @@ func scanAnchored(text string, pattern *regexp.Regexp, needBoundary bool, visit 
 
 func references(path string) []string {
 	suffix := textutil.Lower(textutil.Suffix(path))
+	// 只有这几类文本会引用别的文件；视频等大文件不读内容。
+	if !(pageSuffixes[suffix] || markdownSuffixes[suffix] || suffix == ".css" || suffix == ".js" || suffix == ".mjs") {
+		return nil
+	}
 	text, err := textutil.ReadTextReplace(path)
 	if err != nil {
 		return nil
 	}
 	var found []string
 	if markdownSuffixes[suffix] {
-		// 只收图片（Markdown 语法和内嵌的 <img>/<source>）；链接到的其他文件不自动收，避免扩大发布范围。
+		// 只收图片和音视频（Markdown 语法和内嵌的 <img>/<source>/<video>/<audio>）；链接到的其他文件不自动收，避免扩大发布范围。
 		// 代码块和行内代码里的内容不是引用，先去掉。
 		text = mdCodeRE.ReplaceAllString(text, "")
 		for _, m := range mdImageRE.FindAllStringSubmatch(text, -1) {
 			found = append(found, m[1]+m[2])
 		}
 		for _, tag := range htmlTags(text) {
-			if name := strings.ToLower(tag.name); name != "img" && name != "source" {
+			if name := strings.ToLower(tag.name); name != "img" && name != "source" && name != "video" && name != "audio" {
 				continue
 			}
 			scanAnchored(tag.attrs, htmlRefRE, true, func(loc []int, sub string) {
-				if attr := strings.ToLower(sub[loc[2]:loc[3]]); attr == "src" || attr == "srcset" {
+				if attr := strings.ToLower(sub[loc[2]:loc[3]]); attr == "src" || attr == "srcset" || attr == "poster" {
 					value := groupValue(sub, loc, 2)
 					if attr == "srcset" {
 						for _, part := range strings.Split(value, ",") {
@@ -492,6 +516,9 @@ func Collect(entry, root string, extra []string) ([]string, []string, error) {
 }
 
 func pageTitle(entry string) string {
+	if MediaKind(entry) != "" {
+		return textutil.Stem(entry)
+	}
 	text, err := textutil.ReadTextReplace(entry)
 	if err != nil {
 		text = ""
@@ -539,8 +566,8 @@ func Publish(registry, entry, root string, extra []string, title string) (*ojson
 	if err != nil {
 		return nil, nil, err
 	}
-	if suffix := textutil.Lower(textutil.Suffix(entryPath)); !(pageSuffixes[suffix] || markdownSuffixes[suffix]) || !textutil.IsFile(entryPath) {
-		return nil, nil, config.Errorf("入口页必须是存在的.html或.md文件: %s", entryPath)
+	if suffix := textutil.Lower(textutil.Suffix(entryPath)); !(pageSuffixes[suffix] || markdownSuffixes[suffix] || mediaSuffixes[suffix] != "") || !textutil.IsFile(entryPath) {
+		return nil, nil, config.Errorf("入口页必须是存在的.html或.md文件，或图片、音视频文件: %s", entryPath)
 	}
 	if root == "" {
 		root = textutil.Parent(entryPath)
@@ -669,6 +696,8 @@ func Summary(record *ojson.Object) *ojson.Object {
 	kind, readURL := "html", ""
 	if IsMarkdown(Str(record, "entry")) {
 		kind, readURL = "markdown", ReadURL(id)
+	} else if media := MediaKind(Str(record, "entry")); media != "" {
+		kind, readURL = media, ReadURL(id)
 	}
 	return ojson.NewObject(
 		"id", id, "title", record.Value("title"), "url", "/a/"+id+"/", "kind", kind, "readUrl", readURL,
@@ -701,7 +730,7 @@ func Listing(registry string) ([]any, error) {
 }
 
 // ReaderManifest 是单文件阅读页用的清单，格式与文档项目的 manifest.json 相同：
-// Markdown 文件可在阅读页里切换，图片内嵌，HTML 在新窗口打开，其余文件下载。
+// Markdown 文件可在阅读页里切换，图片和音视频内嵌，HTML 在新窗口打开，其余文件下载。
 func ReaderManifest(record *ojson.Object) *ojson.Object {
 	id := Str(record, "id")
 	base := "/a/" + id + "/"
@@ -720,6 +749,9 @@ func ReaderManifest(record *ojson.Object) *ojson.Object {
 		case strings.HasPrefix(mime, "image/"):
 			entry.Set("kind", "image")
 			entry.Set("url", url)
+		case strings.HasPrefix(mime, "video/") || strings.HasPrefix(mime, "audio/"):
+			entry.Set("kind", mime[:5])
+			entry.Set("url", url)
 		case strings.HasPrefix(mime, "text/html"):
 			entry.Set("kind", "html")
 			entry.Set("previewUrl", url)
@@ -729,7 +761,14 @@ func ReaderManifest(record *ojson.Object) *ojson.Object {
 		}
 		entries = append(entries, entry)
 	}
-	return ojson.NewObject("id", "a-"+id, "name", record.Value("title"), "home", record.Value("entry"),
+	home := record.Value("entry")
+	if MediaKind(Str(record, "entry")) != "" {
+		// 媒体入口的正文是生成的；source 指向媒体文件，批注挂在它上面，相对地址也按它解析。
+		home = ViewRoute
+		entries = append(entries, ojson.NewObject("path", ViewRoute, "route", ViewRoute, "title", record.Value("title"),
+			"source", Str(record, "entry")))
+	}
+	return ojson.NewObject("id", "a-"+id, "name", record.Value("title"), "home", home,
 		"version", Version(record), "target", "a:"+id+"/", "content", base, "versionUrl", base+ReservedDir+"/version",
 		"entries", entries)
 }

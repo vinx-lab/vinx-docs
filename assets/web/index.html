@@ -7,6 +7,7 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/assets/app.css">
   <script src="/assets/theme.js"></script>
+  <script src="/assets/auth.js"></script>
   <script src="/assets/icons.js" defer></script>
   <script src="/vendor/qrcode.js" defer></script>
   <script src="/assets/search.js" defer></script>
@@ -22,9 +23,9 @@
         <input id="search-input" type="search" placeholder="跨项目搜索文档标题与正文…" autocomplete="off" spellcheck="false">
       </form>
       <nav class="hub-actions" aria-label="主导航">
-        <a class="ghost-button" href="/published.html">页面</a>
-        <a id="comments-link" class="ghost-button" href="/comments.html">批注</a>
-        <a class="ghost-button" href="/admin.html">管理后台</a>
+        <a class="ghost-button needs-login" href="/published.html">页面</a>
+        <a id="comments-link" class="ghost-button needs-login" href="/comments.html">批注</a>
+        <a class="ghost-button needs-login" href="/admin.html">管理后台</a>
         <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
       </nav>
     </header>
@@ -36,12 +37,12 @@
         <div class="section-tools">
           <label for="project-filter" class="sr-only">筛选项目</label>
           <input id="project-filter" type="search" placeholder="筛选项目">
-          <button id="sync-docs" type="button" class="ghost-button" disabled><span data-icon="sync"></span>立即同步</button>
-          <button id="toggle-register" type="button" class="ghost-button" aria-expanded="false" aria-controls="register-panel"><span data-icon="plus"></span>接入项目</button>
+          <button id="sync-docs" type="button" class="ghost-button needs-login" disabled><span data-icon="sync"></span>立即同步</button>
+          <button id="toggle-register" type="button" class="ghost-button needs-login" aria-expanded="false" aria-controls="register-panel"><span data-icon="plus"></span>接入项目</button>
         </div>
       </div>
-      <p id="manage-status" class="manage-status hub-status" role="status" aria-live="polite">正在连接管理接口…</p>
-      <div id="register-panel" class="manage-panel" hidden>
+      <p id="manage-status" class="manage-status hub-status needs-login" role="status" aria-live="polite">正在连接管理接口…</p>
+      <div id="register-panel" class="manage-panel needs-login" hidden>
         <form id="register-project">
           <label for="docs-path">文档目录路径</label>
           <div class="path-entry">
@@ -54,7 +55,7 @@
       <div id="projects" class="project-list" aria-live="polite">正在读取项目清单…</div>
     </section>
 
-    <section class="hub-section" aria-labelledby="published-heading" id="published-section" hidden>
+    <section class="hub-section needs-login" aria-labelledby="published-heading" id="published-section" hidden>
       <div class="section-head">
         <h2 id="published-heading">页面</h2>
         <a class="section-note" href="/published.html">全部页面 →</a>
@@ -64,7 +65,7 @@
     </section>
 
     <footer class="hub-footer">
-      <p>本站不设登录：能访问 8000 端口的设备都能阅读、同步和接入项目，请只在受信任的网络里使用。</p>
+      <p class="needs-login">本站内网访问不设登录：能访问 8000 端口的设备都能阅读、同步和接入项目，请只在受信任的网络里使用。</p>
       <details class="access-panel">
         <summary>在手机上打开</summary>
         <div class="access-body">
