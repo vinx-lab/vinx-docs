@@ -8,6 +8,7 @@
 
 - 经反向代理对外访问时要登录：带转发头或 `Host` 是登记的外部域名的请求按外部处理；未登录只能只读查看标为「公开阅读」的项目和发布后 24 小时内（可调）的短链接，其余跳转登录页。密码、外部域名和免登录时长在管理后台「外部访问」里设置，只能在内网修改。内网直连行为不变，登记了外部域名后，`vinx-docs publish` 同时给出外网链接（`--json` 里是 `externalUrl`）。见 [spec 0006](https://github.com/vinx-lab/vinx-docs/blob/main/docs/specs/0006-password-for-reverse-proxy.md) 与 [ADR 0005](https://github.com/vinx-lab/vinx-docs/blob/main/docs/architecture-decisions/0005-external-access-login.md)。
 - 短链接支持图片、视频和音频：可直接发布 `.png` `.jpg` `.gif` `.webp` `.svg` `.mp4` `.webm` `.mp3` `.wav`，打开的阅读页与 Markdown 一致（顶栏、返回文档中心、批注），媒体按屏幕高度等比缩小、一屏看完，图片点击放大，视频可全屏（页面列表的预览框里也可以）；Markdown 里 `![](demo.mp4)` 内嵌播放；非 HTML 文件流式发送并支持 `Range`，可拖动进度（Safari / iOS 播放需要 `Range`）；Markdown 里直接写的 `<img>` `<video>` `<audio>` 相对地址在阅读页里也能加载，见 [spec 0005](https://github.com/vinx-lab/vinx-docs/blob/main/docs/specs/0005-video-short-links.md)。
+- 外部访问密码不再限制长度和字符，只要求不为空。
 - 批注抽屉新增「全部交给 agent（N）」：先逐条「保存批注」，写完后把本页所有待处理批注按编号顺序一次交给 agent。
 
 ### 修复

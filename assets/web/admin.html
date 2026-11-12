@@ -93,9 +93,9 @@
         <p class="card-note">经反向代理（带 <code>X-Forwarded-For</code> 等转发头，或 Host 是下面登记的域名）来的请求按外部访问处理：要登录才能看非公开项目和管理功能；刚发布的短链接和项目设置里勾了「公开阅读」的项目不登录也能只读。内网直连不受影响。密码和这些设置只能在内网修改。</p>
         <p id="auth-state" class="card-note"></p>
         <form id="password-form" class="auth-form">
-          <label for="new-password">访问密码（8 到 200 个字符；修改后所有已登录的设备需要重新登录）</label>
+          <label for="new-password">访问密码（不限长度和字符，不能为空；修改后所有已登录的设备需要重新登录）</label>
           <div class="auth-row">
-            <input id="new-password" type="password" autocomplete="new-password" minlength="8" maxlength="200" required>
+            <input id="new-password" type="password" autocomplete="new-password" required>
             <button type="submit">设置密码</button>
             <button id="logout-all" type="button" class="ghost">注销所有登录</button>
           </div>

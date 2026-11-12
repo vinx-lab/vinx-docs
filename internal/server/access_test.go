@@ -226,8 +226,15 @@ func TestLoginSessionAndLogout(t *testing.T) {
 	if r := a.login(t, "203.0.113.9", "anything"); r.status != 401 || !strings.Contains(r.json(t)["error"].(string), "尚未设置") {
 		t.Fatal("没设密码时不能登录", r.status, string(r.body))
 	}
-	if r := a.post("/api/auth/password", map[string]any{"password": "short"}, nil); r.status != 400 {
+	// 不限长度和字符，只拒绝空密码。
+	if r := a.post("/api/auth/password", map[string]any{"password": ""}, nil); r.status != 400 {
 		t.Fatal(r.status)
+	}
+	for _, password := range []string{"1", "密", strings.Repeat("长 password ", 100)} {
+		a.setPassword(t, password)
+		if r := a.login(t, "203.0.113.7", password); r.status != 200 {
+			t.Fatal(password, r.status, string(r.body))
+		}
 	}
 	a.setPassword(t, "correct horse")
 	if r := a.login(t, "203.0.113.9", "wrong horse"); r.status != 401 {

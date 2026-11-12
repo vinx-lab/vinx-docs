@@ -18,7 +18,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unicode/utf8"
 
 	"github.com/vinx-lab/vinx-docs/internal/config"
 )
@@ -218,8 +217,9 @@ func (s *Store) PasswordSet() bool {
 
 // SetPassword 设置新密码并注销全部会话。
 func (s *Store) SetPassword(password string) error {
-	if n := utf8.RuneCountInString(password); n < 8 || n > 200 {
-		return config.Errorf("密码长度必须是8到200个字符")
+	// 不限长度和字符，只要求非空：空密码等于没有设置密码。
+	if password == "" {
+		return config.Errorf("密码不能为空")
 	}
 	salt := make([]byte, 16)
 	if _, err := rand.Read(salt); err != nil {
