@@ -58,6 +58,10 @@ GET /a/<短码>/<路径>  -->  服务
   -> 路径必须在清单里；每次请求重新做同样的检查
   -> 读取源文件返回；HTML末尾插入 /assets/artifact-live.js（带当时版本号）
   -> 页面每2秒查 /a/<短码>/__docsify_x/version（清单文件的mtime/大小摘要），变了就reload
+
+GET /a/<短码>/__docsify_x/download  -->  下载源文件
+  -> 清单只有一个文件：原样发送（HTML不注入脚本），Content-Disposition 带原文件名
+  -> 多个文件：清单里仍通过检查的文件按原目录结构打成 zip（顶层目录用标题）
 ```
 
 安全边界：短链接页面与管理后台同属8000的origin，因此响应带 `Content-Security-Policy: sandbox allow-scripts …`（不给 `allow-same-origin`）。页面的origin变成 `null`，写接口的 `Origin` 校验会拒绝它；加载资源只允许本站，外部CDN被拦截。只对 `Origin: null` 回 `Access-Control-Allow-Origin: null`，页面才能 `fetch` 同清单里的JSON。短链接响应只能有这一条策略：如果再叠加站点级 CSP，两条策略取交集，会拦掉页面脚本和 iframe（由 `internal/server/server_test.go` 守住）。

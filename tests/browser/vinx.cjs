@@ -71,6 +71,11 @@ const [base, code, output] = process.argv.slice(2);
     await short.waitForTimeout(2500);
     assert.equal(await short.evaluate(() => performance.timeOrigin), before, '版本没变时不应刷新');
     assert.equal(await short.getByText('在 Vinx Docs 中批注').count(), 1);
+    // 单独打开的 HTML 页面也能下载源文件；清单里有多个文件时是 zip。
+    await short.getByText('下载源文件 ▾').click();
+    const [download] = await Promise.all([short.waitForEvent('download'), short.getByText(/^按标题命名/).click()]);
+    assert.match(download.suggestedFilename(), /\.(zip|html?)$/);
+    assert.equal(await download.failure(), null);
     await short.screenshot({ path: output + '/vinx-short-link.png' });
     await short.close();
 

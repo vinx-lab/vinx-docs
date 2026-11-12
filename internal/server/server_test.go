@@ -3,6 +3,7 @@ package server_test
 // HTTP 层测试：管理接口、短链接、静态头、不支持的方法、长连接和进程管理。
 
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"crypto/sha256"
@@ -746,5 +747,83 @@ func TestManageLifecycleIsIdempotentAndDoesNotKillForeignPID(t *testing.T) {
 	}
 	if _, err := os.Stat(pidFile); err == nil {
 		t.Fatal("pid 文件应已删除")
+	}
+}
+
+func TestArtifactDownload(t *testing.T) {
+	f := startServer(t, makeTool(t))
+	dir := filepath.Join(testutil.TempDir(t), "dl")
+	writeFile(t, filepath.Join(dir, "index.html"), `<html><head><link rel="stylesheet" href="css/app.css"></head><body>原样</body></html>`)
+	writeFile(t, filepath.Join(dir, "css", "app.css"), "body{}")
+	writeFile(t, filepath.Join(dir, "方案.md"), "# 方案\n")
+	writeFile(t, filepath.Join(dir, "secret.txt"), "不在清单")
+	registry := pages.DefaultRegistry(f.tool)
+	multi, _, err := pages.Publish(registry, filepath.Join(dir, "index.html"), "", nil, "原型/第一版")
+	if err != nil {
+		t.Fatal(err)
+	}
+	single, _, err := pages.Publish(registry, filepath.Join(dir, "方案.md"), "", nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 单个文件：原样下载，默认按标题命名（保留扩展名），?name=file 按原文件名；文件名按 RFC 2231 编码，不注入任何脚本。
+	r := f.get(pages.DownloadURL(pages.Str(single, "id")), nil)
+	if r.status != 200 || string(r.body) != "# 方案\n" || r.headers.Get("Content-Disposition") != "attachment; filename*=utf-8''%E6%96%B9%E6%A1%88.md" ||
+		r.headers.Get("X-Content-Type-Options") != "nosniff" {
+		t.Fatal(r.status, r.headers, string(r.body))
+	}
+	retitled, _, err := pages.Publish(registry, filepath.Join(dir, "方案.md"), "", nil, "评审稿 v2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := f.get(pages.DownloadURL(pages.Str(retitled, "id")), nil); r.headers.Get("Content-Disposition") != "attachment; filename*=utf-8''%E8%AF%84%E5%AE%A1%E7%A8%BF%20v2.md" {
+		t.Fatal(r.headers)
+	}
+	if r := f.get(pages.DownloadURL(pages.Str(retitled, "id"))+"?name=file", nil); r.headers.Get("Content-Disposition") != "attachment; filename*=utf-8''%E6%96%B9%E6%A1%88.md" {
+		t.Fatal(r.headers)
+	}
+	// 多个文件：按原目录结构打成 zip，包内顶层目录用标题（去掉不能做文件名的字符）；只含清单里的文件，HTML 不注入脚本。
+	r = f.get(pages.DownloadURL(pages.Str(multi, "id")), nil)
+	if r.status != 200 || r.headers.Get("Content-Type") != "application/zip" ||
+		r.headers.Get("Content-Disposition") != "attachment; filename*=utf-8''%E5%8E%9F%E5%9E%8B_%E7%AC%AC%E4%B8%80%E7%89%88.zip" {
+		t.Fatal(r.status, r.headers)
+	}
+	archive, err := zip.NewReader(bytes.NewReader(r.body), int64(len(r.body)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, file := range archive.File {
+		rc, err := file.Open()
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := io.ReadAll(rc)
+		rc.Close()
+		got[file.Name] = string(body)
+	}
+	if len(got) != 2 || got["原型_第一版/css/app.css"] != "body{}" || strings.Contains(got["原型_第一版/index.html"], "artifact-live") ||
+		!strings.Contains(got["原型_第一版/index.html"], "原样") {
+		t.Fatal(got)
+	}
+	// 按原文件名：zip 名和包内顶层目录取入口文件名。
+	r = f.get(pages.DownloadURL(pages.Str(multi, "id"))+"?name=file", nil)
+	if r.headers.Get("Content-Disposition") != "attachment; filename=index.zip" {
+		t.Fatal(r.headers)
+	}
+	if archive, err := zip.NewReader(bytes.NewReader(r.body), int64(len(r.body))); err != nil || archive.File[0].Name != "index/index.html" {
+		t.Fatal(err, archive.File[0].Name)
+	}
+	manifest := f.get("/a/"+pages.Str(single, "id")+"/"+pages.ReservedDir+"/manifest", nil).json(t)
+	if names := manifest["downloadNames"].(map[string]any); names["title"] != "评审稿 v2.md" || names["file"] != "方案.md" {
+		t.Fatal(names)
+	}
+	// 源文件被删后不能下载。
+	os.Remove(filepath.Join(dir, "方案.md"))
+	if r := f.get(pages.DownloadURL(pages.Str(single, "id")), nil); r.status != 404 {
+		t.Fatal(r.status)
+	}
+	if r := f.get("/a/zzzz/"+pages.DownloadRoute, nil); r.status != 404 {
+		t.Fatal(r.status)
 	}
 }

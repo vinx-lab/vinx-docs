@@ -33,15 +33,44 @@
   function ready(fn) { if (document.body) fn(); else document.addEventListener('DOMContentLoaded', fn); }
 
   if (!framed) {
-    // 单独打开时给一个回到发布页的入口，在那里才能批注和编辑。
+    // 单独打开时给两个入口：回到发布页（在那里才能批注和编辑），下载源文件（单个文件原样下载，多个文件打成 zip，不含这里注入的脚本）。
     ready(() => {
-      const link = document.createElement('a');
-      link.href = '/published.html#' + code; link.textContent = '在 Vinx Docs 中批注';
-      link.setAttribute('style', `position:fixed;right:12px;bottom:12px;z-index:${Z};font:12px/1.4 sans-serif;padding:6px 10px;` +
-        'border-radius:4px;background:rgba(23,107,121,.92);color:#fff;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.75');
-      link.addEventListener('mouseenter', () => { link.style.opacity = '1'; });
-      link.addEventListener('mouseleave', () => { link.style.opacity = '.75'; });
-      document.body.append(link);
+      const bar = document.createElement('div');
+      bar.setAttribute('style', `position:fixed;right:12px;bottom:12px;z-index:${Z};display:flex;gap:8px`);
+      const make = (href, text) => {
+        const link = document.createElement('a');
+        link.href = href; link.textContent = text;
+        link.setAttribute('style', 'font:12px/1.4 sans-serif;padding:6px 10px;border-radius:4px;background:rgba(23,107,121,.92);color:#fff;' +
+          'text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.75');
+        link.addEventListener('mouseenter', () => { link.style.opacity = '1'; });
+        link.addEventListener('mouseleave', () => { link.style.opacity = '.75'; });
+        bar.append(link);
+        return link;
+      };
+      // 下载可选按标题命名或按原文件名；名字从清单里取（清单接口对沙箱页面放开了跨域读取）。
+      const menu = document.createElement('div');
+      menu.setAttribute('style', 'position:absolute;right:0;bottom:calc(100% + 6px);display:none;flex-direction:column;gap:4px;align-items:flex-end');
+      const url = '/a/' + code + '/__docsify_x/download';
+      const options = [[url, '按标题命名'], [url + '?name=file', '按原文件名']].map(([href, text]) => {
+        const link = make(href, text); link.setAttribute('download', ''); menu.append(link);
+        link.addEventListener('click', () => { menu.style.display = 'none'; });
+        return link;
+      });
+      const toggle = make('#', '下载源文件 ▾');
+      toggle.addEventListener('click', event => {
+        event.preventDefault();
+        menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+      });
+      fetch('/a/' + code + '/__docsify_x/manifest', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
+        const names = meta && meta.downloadNames;
+        if (!names) return;
+        options[0].textContent = '按标题命名：' + names.title;
+        options[1].textContent = '按原文件名：' + names.file;
+        if (names.title === names.file) options[1].remove();
+      }).catch(() => { /* 取不到名字时保留通用文字 */ });
+      make('/published.html#' + code, '在 Vinx Docs 中批注');
+      bar.append(menu);
+      document.body.append(bar);
     });
     return;
   }

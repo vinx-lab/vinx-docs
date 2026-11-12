@@ -528,3 +528,49 @@ body.published .vinx-editor.docked{top:57px}
 .auth-form{display:grid;gap:14px}.auth-form .field-block textarea,.auth-form input[type=password]{width:100%}.auth-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.auth-row input[type=password]{flex:1;min-width:200px;min-height:40px;border:1px solid var(--line);border-radius:4px;padding:8px 10px;font:inherit}.auth-form button{min-height:40px;padding:8px 16px;border:1px solid var(--accent);border-radius:4px;background:var(--accent);color:var(--card);font:inherit;font-size:14px;cursor:pointer;justify-self:start}.auth-form button.ghost{background:transparent;color:var(--accent)}
 .artifact-window{font-size:12px;color:var(--muted)}.artifact-window[data-state=closed]{color:var(--warn)}
 .auth-form>label{font-size:14px}
+
+/* ---- 单文件阅读页（短链接）的本页目录：固定在左侧、垂直居中，可收起（reader.js buildToc） ---- */
+.markdown-section :is(h1,h2,h3,h4,h5,h6){scroll-margin-top:calc(var(--reader-top-h) + 12px)}
+.page-toc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+.page-toc .page-toc-head p{margin:0}
+.page-toc-side{position:fixed;z-index:35;left:16px;top:calc(50% + var(--reader-top-h) / 2);transform:translateY(-50%);float:none;display:none;flex-direction:column;width:260px;max-height:calc(100vh - var(--reader-top-h) - 48px);margin:0;padding:12px 6px 12px 14px;background:var(--card);box-shadow:var(--shadow)}
+.toc-open .page-toc-side{display:flex}
+.page-toc-side .toc-list{overflow-y:auto;overscroll-behavior:contain;padding-right:8px}
+.page-toc-side a{display:block;flex:1;min-width:0;padding:2px 6px;border-left:2px solid transparent;color:var(--muted)}
+.page-toc-side li{margin:2px 0}
+.page-toc-side .toc-row{display:flex;align-items:flex-start}
+.page-toc-side .toc-children{margin:0;padding-left:14px;font-size:12px}
+.page-toc-side .toc-node.collapsed>.toc-children{display:none}
+.page-toc-side .toc-node.collapsed.has-current>.toc-row a{color:var(--accent);font-weight:700}
+.toc-fold,.toc-fold-spacer{flex:none;width:18px;height:24px}
+.toc-fold{display:flex;align-items:center;justify-content:center;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
+.toc-fold::before{content:"";border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s}
+.toc-fold[aria-expanded=true]::before{transform:rotate(90deg)}
+.toc-fold:hover{color:var(--accent)}
+.page-toc-tools{display:flex;align-items:center;gap:4px}
+.page-toc-tools button:not(.page-toc-hide){padding:2px 4px;border:0;background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.page-toc-tools button:not(.page-toc-hide):hover{color:var(--accent)}
+.page-toc-side a:hover{color:var(--accent)}
+.page-toc-side a[aria-current]{color:var(--accent);font-weight:700;border-left-color:var(--accent)}
+.page-toc-hide{flex:none;width:28px;height:28px;margin:0 6px 0 2px;border:1px solid var(--line);border-radius:4px;background:var(--card);color:var(--muted);font-size:18px;line-height:1;cursor:pointer}
+.page-toc-hide:hover{color:var(--accent);border-color:var(--accent)}
+.toc-toggle{position:fixed;z-index:35;left:0;top:calc(50% + var(--reader-top-h) / 2);transform:translateY(-50%);writing-mode:vertical-rl;letter-spacing:.2em;padding:14px 7px;border:1px solid var(--line);border-left:0;border-radius:0 6px 6px 0;background:var(--card);color:var(--accent);font:inherit;font-size:13px;cursor:pointer;box-shadow:var(--shadow)}
+.toc-toggle[hidden]{display:none}
+.toc-toggle:hover{border-color:var(--accent)}
+.reader.single-doc.has-toc.toc-open .content{left:292px}
+.reader.single-doc .content{transition:left .2s}
+@media(max-width:900px){.page-toc-side{width:min(280px,calc(100vw - 48px))}.reader.single-doc.has-toc.toc-open .content{left:0}}
+@media print{.page-toc-side,.toc-toggle{display:none!important}.reader.single-doc.has-toc.toc-open .content{left:0}}
+
+/* ---- 「下载源文件」下拉菜单（download-menu.js） ---- */
+.download-menu{position:relative}
+.download-menu[hidden]{display:none}
+.download-menu>summary{list-style:none}
+.download-menu>summary::-webkit-details-marker{display:none}
+.download-menu>summary::after{content:"";margin-left:6px;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor}
+.download-options{position:absolute;right:0;top:calc(100% + 4px);z-index:70;display:grid;gap:2px;min-width:220px;max-width:min(360px,calc(100vw - 32px));padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--card);box-shadow:var(--shadow)}
+.download-options a{display:grid;gap:2px;padding:8px 10px;border-radius:4px;color:var(--ink);text-decoration:none;font-size:13px}
+.download-options a[hidden]{display:none}
+.download-options a:hover,.download-options a:focus-visible{background:var(--code-bg);color:var(--accent)}
+.download-options small{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+@media(max-width:768px){.download-options{right:auto;left:0}}

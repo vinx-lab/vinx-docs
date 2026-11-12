@@ -10,6 +10,7 @@
   <script src="/assets/auth.js"></script>
   <script src="/assets/vinx-editor.js" defer></script>
   <script src="/assets/vinx-comments.js" defer></script>
+  <script src="/assets/download-menu.js" defer></script>
   <script src="/assets/published.js" defer></script>
 </head>
 <body class="published">
@@ -23,6 +24,13 @@
       <button id="comment-toggle" type="button" class="ghost-button" hidden>批注</button>
       <select id="edit-file" class="ghost-select" aria-label="选择要编辑的源文件" hidden></select>
       <button id="edit-source" type="button" class="ghost-button" hidden>编辑源码</button>
+      <details id="download-menu" class="download-menu" hidden>
+        <summary class="ghost-button" title="下载源文件；有多个文件时打包成 zip">下载源文件</summary>
+        <div class="download-options">
+          <a href="#" download><span>按标题命名</span><small></small></a>
+          <a href="#" download><span>按原文件名</span><small></small></a>
+        </div>
+      </details>
       <a id="open-new" class="ghost-button" href="#" target="_blank" rel="noopener" hidden>新窗口打开</a>
       <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
     </div>

@@ -13,6 +13,7 @@
   <script src="/assets/links.js" defer></script>
   <script src="/assets/vinx-editor.js" defer></script>
   <script src="/assets/vinx-comments.js" defer></script>
+  <script src="/assets/download-menu.js" defer></script>
   <script src="/assets/reader-vinx.js" defer></script>
   <script src="/assets/reader.js" defer></script>
 </head>
@@ -25,6 +26,13 @@
       <label class="sr-only" for="reader-search-input">跨项目搜索</label>
       <input id="reader-search-input" type="search" placeholder="跨项目搜索…" autocomplete="off" spellcheck="false">
     </form>
+    <details id="download-menu" class="download-menu" hidden>
+      <summary class="ghost-button" title="下载源文件；有多个文件时打包成 zip">下载源文件</summary>
+      <div class="download-options">
+        <a href="#" download><span>按标题命名</span><small></small></a>
+        <a href="#" download><span>按原文件名</span><small></small></a>
+      </div>
+    </details>
     <button id="font-toggle" type="button" class="ghost-button" aria-label="切换正文字号">字号</button>
     <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>
     <button id="edit-doc" type="button" class="ghost-button needs-login" title="在页面上修改这篇文档的源文件">编辑</button>

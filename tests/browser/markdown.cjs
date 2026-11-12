@@ -26,6 +26,50 @@ const [base, code, source, output] = process.argv.slice(2);
     assert.match(await page.locator('.markdown-section').textContent(), /未收录/);
     await page.screenshot({ path: output + '/markdown-reader.png' });
 
+    // 1b. 本页目录在左侧：点目录项滚到对应标题（不是 404），标题在顶栏下面；可以收起和展开。
+    const toc = page.locator('nav.page-toc-side');
+    await toc.waitFor();
+    const box = await toc.boundingBox();
+    assert.ok(box.x < 40, '目录应在左侧：' + JSON.stringify(box));
+    await toc.getByRole('link', { name: '取舍' }).click();
+    await page.waitForFunction(() => { const h = document.getElementById('取舍'); const top = h && h.getBoundingClientRect().top; return top > 40 && top < 120; });
+    assert.doesNotMatch(await page.locator('.markdown-section').textContent(), /404/);
+    await page.waitForFunction(() => document.querySelector('nav.page-toc-side a[aria-current]')?.textContent === '取舍');
+    // 二到四级标题成树：「方案」下的三级、四级标题可以折叠和展开。
+    const sub = toc.getByRole('link', { name: '方案细节' });
+    await page.getByRole('button', { name: '全部展开' }).click();
+    await sub.waitFor();
+    assert.ok(await toc.getByRole('link', { name: '第四级' }).isVisible());
+    await page.getByRole('button', { name: '全部折叠' }).click();
+    await sub.waitFor({ state: 'hidden' });
+    await toc.getByRole('button', { name: '展开或折叠「方案」' }).click();
+    await sub.waitFor();
+    // 折叠状态下点有子项的目录项：跳过去并展开，滚动结束后仍保持展开。
+    await page.getByRole('button', { name: '全部折叠' }).click();
+    await sub.waitFor({ state: 'hidden' });
+    await toc.getByRole('link', { name: '方案', exact: true }).click();
+    await page.waitForFunction(() => { const top = document.getElementById('方案')?.getBoundingClientRect().top; return top > 40 && top < 120; });
+    await page.waitForTimeout(1500);
+    assert.ok(await sub.isVisible(), '点击后「方案」应保持展开');
+    await sub.click();
+    await page.waitForFunction(() => { const top = document.getElementById('方案细节')?.getBoundingClientRect().top; return top > 40 && top < 120; });
+    await page.locator('.page-toc-hide').click();
+    await toc.waitFor({ state: 'hidden' });
+    await page.locator('.toc-toggle').click();
+    await toc.waitFor();
+
+    // 1c. 下载源文件：清单里有 Markdown 和它引用的图片，打成 zip，包内按原目录结构；可选按标题或按原文件名命名。
+    await page.locator('#download-menu summary').click();
+    assert.deepEqual(await page.locator('#download-menu .download-options a:visible small').allTextContents(), ['Markdown 方案.zip', 'plan.zip']);
+    const [byFile] = await Promise.all([page.waitForEvent('download'), page.locator('#download-menu .download-options a').nth(1).click()]);
+    assert.equal(byFile.suggestedFilename(), 'plan.zip');
+    await page.locator('#download-menu summary').click();
+    const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#download-menu .download-options a').first().click()]);
+    assert.equal(download.suggestedFilename(), 'Markdown 方案.zip');
+    const zip = fs.readFileSync(await download.path());
+    assert.equal(zip.readUInt32LE(0), 0x04034b50, '应是 zip');
+    for (const name of ['Markdown 方案/plan.md', 'Markdown 方案/a.png']) assert.ok(zip.includes(Buffer.from(name)), '缺少 ' + name);
+
     // 2. 批注目标是短链接里的源文件。
     await page.locator('#comment-toggle').click();
     await page.getByRole('button', { name: '对整篇文档写批注' }).click();
@@ -61,7 +105,7 @@ const [base, code, source, output] = process.argv.slice(2);
 
     assert.deepEqual(errors, [], '页面报错');
     assert.deepEqual(external, [], '不应有外部请求');
-    console.log('通过：短链接跳转阅读页、图片与 Mermaid、清单外链接说明、批注、编辑写回源文件、外部修改提示更新、页面列表预览。');
+    console.log('通过：短链接跳转阅读页、图片与 Mermaid、清单外链接说明、左侧本页目录跳转与收起、下载源文件、批注、编辑写回源文件、外部修改提示更新、页面列表预览。');
   } catch (error) {
     console.error(error && error.stack || error);
     process.exitCode = 1;

@@ -565,6 +565,10 @@ func (q *request) serveArtifact(path string) {
 		q.sendPage(200, []byte(ojson.DumpsASCII(pages.ReaderManifest(record), -1)), "application/json; charset=utf-8")
 		return
 	}
+	if rel == pages.DownloadRoute {
+		q.serveDownload(record)
+		return
+	}
 	if rel == pages.ReservedDir+"/version" {
 		q.sendPage(200, []byte(ojson.DumpsASCII(ojson.NewObject("version", pages.Version(record)), -1)), "application/json; charset=utf-8")
 		return

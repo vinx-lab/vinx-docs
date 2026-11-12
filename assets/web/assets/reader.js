@@ -167,24 +167,170 @@
     }
   }
 
-  function buildToc(section) {
+  // 本页目录。链接用 Docsify 给标题生成的锚点（#/<路由>?id=<标题>），写成 #<标题id> 会被当成路由跳到 404。
+  // 项目阅读页：浮在正文右上角。单文件阅读页（短链接）没有侧栏：固定在左侧、垂直居中、随滚动高亮当前小节，可以收起。
+  const TOC_KEY = 'docsify-x-toc';
+  const tocNarrow = () => matchMedia('(max-width: 900px)').matches;
+  let tocSpy = null, tocWidthWatched = false;
+  function setTocOpen(open, remember) {
+    document.body.classList.toggle('toc-open', open);
+    const toggle = document.querySelector('.toc-toggle');
+    if (toggle) { toggle.setAttribute('aria-expanded', String(open)); toggle.hidden = open; }
+    if (remember && !tocNarrow()) { try { localStorage.setItem(TOC_KEY, open ? 'open' : 'closed'); } catch (_) { /* 隐私模式忽略 */ } }
+  }
+  function tocToggle() {
+    let toggle = document.querySelector('.toc-toggle');
+    if (toggle) return toggle;
+    toggle = document.createElement('button');
+    toggle.type = 'button'; toggle.className = 'toc-toggle'; toggle.textContent = '目录';
+    toggle.title = '显示本页目录'; toggle.setAttribute('aria-label', '显示本页目录');
+    toggle.addEventListener('click', () => setTocOpen(true, true));
+    document.body.append(toggle);
+    return toggle;
+  }
+  function buildToc(section, route) {
     document.querySelector('.page-toc')?.remove();
-    const headings = Array.from(section.querySelectorAll('h2, h3')).filter(node => node.id);
-    if (headings.length < 3) return;
-    const nav = document.createElement('nav');
-    nav.className = 'page-toc'; nav.setAttribute('aria-label', '本页目录');
-    const title = document.createElement('p'); title.textContent = '本页目录';
-    const list = document.createElement('ul');
-    for (const heading of headings) {
-      const item = document.createElement('li');
-      item.className = heading.tagName === 'H3' ? 'toc-sub' : '';
-      const link = document.createElement('a');
-      link.href = '#' + heading.id;
-      link.textContent = heading.textContent.replace(/^\s*#\s*/, '');
-      item.append(link); list.append(item);
+    if (tocSpy) { removeEventListener('scroll', tocSpy); tocSpy = null; }
+    const side = document.body.classList.contains('single-doc');
+    // 左侧目录收二到四级标题（h2–h4），按层级成树、可折叠；项目阅读页右上角的目录只列 h2、h3。
+    const headings = Array.from(section.querySelectorAll(side ? 'h2, h3, h4' : 'h2, h3')).filter(node => node.id);
+    if (headings.length < 3) {
+      document.body.classList.remove('has-toc', 'toc-open');
+      document.querySelector('.toc-toggle')?.remove();
+      return;
     }
-    nav.append(title, list);
-    section.prepend(nav);
+    const nav = document.createElement('nav');
+    nav.className = 'page-toc' + (side ? ' page-toc-side' : ''); nav.setAttribute('aria-label', '本页目录');
+    if (side) nav.id = 'page-toc';
+    const head = document.createElement('div'); head.className = 'page-toc-head';
+    const title = document.createElement('p'); title.textContent = '本页目录';
+    head.append(title);
+    const list = document.createElement('ul'); list.className = 'toc-list';
+    let onJump = () => {};
+    function makeLink(heading) {
+      const link = document.createElement('a');
+      link.href = heading.querySelector('a[href*="?id="]')?.getAttribute('href') || '#/' + encodeURI(route) + '?id=' + encodeURIComponent(heading.id);
+      link.textContent = heading.textContent.replace(/^\s*#\s*/, '');
+      // 自己滚动（标题的 scroll-margin-top 让开固定顶栏），只改地址不触发 hashchange：Docsify 的滚动会把标题顶到顶栏下面。
+      link.addEventListener('click', event => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        history.replaceState(history.state, '', link.href);
+        onJump(heading);
+        heading.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        if (side && tocNarrow()) setTocOpen(false, false);
+      });
+      return link;
+    }
+    nav.append(head, list);
+    if (!side) {
+      for (const heading of headings) {
+        const item = document.createElement('li');
+        item.className = heading.tagName === 'H3' ? 'toc-sub' : '';
+        item.append(makeLink(heading)); list.append(item);
+      }
+      section.prepend(nav);
+      return;
+    }
+
+    // 树：每个标题挂在它前面最近的、级别更高的标题下面；有子项的节点前面是折叠按钮。
+    // auto：跟随滚动自动展开的分支，离开时再收起；手动点过的分支不再自动收起。
+    const links = [], nodes = [], parents = new Map(), foldable = [], auto = new Set();
+    const setExpanded = (node, open) => {
+      node.classList.toggle('collapsed', !open);
+      node.querySelector(':scope > .toc-row > .toc-fold')?.setAttribute('aria-expanded', String(open));
+    };
+    const level = heading => Number(heading.tagName[1]);
+    const stack = [{ level: 0, ul: list, node: null }];
+    for (const heading of headings) {
+      while (stack.length > 1 && stack[stack.length - 1].level >= level(heading)) stack.pop();
+      const parent = stack[stack.length - 1];
+      if (!parent.ul) {
+        parent.ul = document.createElement('ul'); parent.ul.className = 'toc-children';
+        parent.node.append(parent.ul);
+        const fold = document.createElement('button');
+        fold.type = 'button'; fold.className = 'toc-fold';
+        fold.setAttribute('aria-label', '展开或折叠「' + parent.node.querySelector('a').textContent + '」');
+        const node = parent.node;
+        fold.addEventListener('click', () => { auto.delete(node); setExpanded(node, node.classList.contains('collapsed')); });
+        node.querySelector('.toc-fold-spacer').replaceWith(fold);
+        foldable.push(node);
+      }
+      const node = document.createElement('li'); node.className = 'toc-node';
+      const row = document.createElement('div'); row.className = 'toc-row';
+      const spacer = document.createElement('span'); spacer.className = 'toc-fold-spacer'; spacer.setAttribute('aria-hidden', 'true');
+      const link = makeLink(heading);
+      row.append(spacer, link); node.append(row); parent.ul.append(node);
+      parents.set(node, parent.node);
+      stack.push({ level: level(heading), ul: null, node });
+      links.push(link); nodes.push(node);
+    }
+    // 默认只展开当前小节所在的分支；标题不多（12 个以内）时全部展开。
+    foldable.forEach(node => setExpanded(node, headings.length <= 12));
+    const tools = document.createElement('span'); tools.className = 'page-toc-tools';
+    if (foldable.length) for (const [text, open] of [['全部展开', true], ['全部折叠', false]]) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.textContent = text;
+      button.addEventListener('click', () => { auto.clear(); foldable.forEach(node => setExpanded(node, open)); });
+      tools.append(button);
+    }
+
+    const hide = document.createElement('button');
+    hide.type = 'button'; hide.className = 'page-toc-hide'; hide.textContent = '×';
+    hide.title = '隐藏目录'; hide.setAttribute('aria-label', '隐藏目录');
+    hide.addEventListener('click', () => { setTocOpen(false, true); tocToggle().focus(); });
+    tools.append(hide);
+    head.append(tools);
+    document.body.append(nav);
+    document.body.classList.add('has-toc');
+    tocToggle().setAttribute('aria-controls', 'page-toc');
+    // 宽屏按上次的选择（默认展开）；窄屏默认收起，展开时浮在正文上，点目录项后自动收起。
+    const restore = () => {
+      let saved = '';
+      try { saved = localStorage.getItem(TOC_KEY) || ''; } catch (_) { /* 同上 */ }
+      setTocOpen(tocNarrow() ? false : saved !== 'closed', false);
+    };
+    restore();
+    if (!tocWidthWatched) { tocWidthWatched = true; matchMedia('(max-width: 900px)').addEventListener('change', () => { if (document.body.classList.contains('has-toc')) restore(); }); }
+
+    // 当前小节：最后一个越过顶栏下沿的标题。换到新小节时展开它所在的分支（不收起别的），并让它保持在目录可视范围内。
+    let current = -1, frame = 0, jumping = 0;
+    // 点目录项：有子项的展开并保持（算手动展开）；平滑滚动途中不跟随，免得沿途的分支开了又关，到位后再更新。
+    onJump = heading => {
+      const node = nodes[headings.indexOf(heading)];
+      if (node && foldable.includes(node)) { auto.delete(node); setExpanded(node, true); }
+      clearTimeout(jumping);
+      const done = () => { clearTimeout(jumping); jumping = 0; removeEventListener('scrollend', done); tocSpy(); };
+      jumping = setTimeout(done, 1200);
+      addEventListener('scrollend', done);
+    };
+    tocSpy = () => {
+      if (frame || jumping) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const top = (document.querySelector('.reader-top')?.getBoundingClientRect().bottom || 0) + 24;
+        let at = 0;
+        headings.forEach((heading, index) => { if (heading.getBoundingClientRect().top <= top) at = index; });
+        if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) at = headings.length - 1;
+        if (at === current) return;
+        if (current >= 0) links[current].removeAttribute('aria-current');
+        nav.querySelectorAll('.toc-node.has-current').forEach(node => node.classList.remove('has-current'));
+        current = at; links[at].setAttribute('aria-current', 'location');
+        // 当前分支：当前小节自己（有子项时）和它的各级上级。
+        const branch = new Set();
+        if (foldable.includes(nodes[at])) branch.add(nodes[at]);
+        for (let node = parents.get(nodes[at]); node; node = parents.get(node)) branch.add(node);
+        for (const node of auto) if (!branch.has(node)) { setExpanded(node, false); auto.delete(node); }
+        for (const node of branch) {
+          if (node !== nodes[at]) node.classList.add('has-current');
+          if (node.classList.contains('collapsed')) { setExpanded(node, true); auto.add(node); }
+        }
+        const box = list.getBoundingClientRect(), row = links[at].getBoundingClientRect();
+        if (row.top < box.top || row.bottom > box.bottom) list.scrollTop += row.top - box.top - box.height / 2;
+      });
+    };
+    addEventListener('scroll', tocSpy, { passive: true });
+    tocSpy();
   }
 
   function buildPager(section, meta, route) {
@@ -229,6 +375,8 @@
     document.title = meta.name + ' · Vinx Docs';
     document.getElementById('project-label').textContent = meta.name;
     watchUpdates(meta.versionUrl || manifestUrl, meta.version);
+    // 短链接：下载源文件（单个文件原样下载，多个文件打成 zip）。
+    if (shortId && window.VinxDownloadMenu) VinxDownloadMenu.set(document.getElementById('download-menu'), meta.downloadUrl, meta.downloadNames);
     let source = meta.home;
 
     const searchInput = document.getElementById('reader-search-input');
@@ -305,7 +453,7 @@
             const wrapper = document.createElement('div'); wrapper.className = 'table-scroll';
             table.before(wrapper); wrapper.append(table);
           });
-          buildToc(section);
+          buildToc(section, route);
           buildPager(section, meta, route);
           renderAlerts(section);
           addCopyButtons(section);

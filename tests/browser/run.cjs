@@ -166,7 +166,9 @@ function pageFixture() {
 
 function markdownFixture() {
   const doc = path.join(WORK, 'markdown');
-  write(path.join(doc, 'plan.md'), '# Markdown 方案\n\n![示意](a.png)\n\n```mermaid\ngraph LR\n  A --> B\n```\n\n见[另一篇](other.md)。\n');
+  write(path.join(doc, 'plan.md'), '# Markdown 方案\n\n![示意](a.png)\n\n```mermaid\ngraph LR\n  A --> B\n```\n\n见[另一篇](other.md)。\n' +
+    ['背景', '方案', '取舍', '验证'].map(name => `\n## ${name}\n\n${'正文。'.repeat(400)}\n` +
+      (name === '方案' ? `\n### 方案细节\n\n${'细节。'.repeat(300)}\n\n#### 第四级\n\n${'条目。'.repeat(300)}\n` : '')).join(''));
   write(path.join(doc, 'other.md'), '# 不在清单里\n');
   write(path.join(doc, 'a.png'), fs.readFileSync(path.join(WORK, 'page', 'a.png')));
   return path.join(doc, 'plan.md');

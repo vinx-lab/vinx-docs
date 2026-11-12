@@ -5,6 +5,7 @@
   const frame = document.getElementById('artifact-frame');
   const empty = document.getElementById('artifact-empty');
   const openNew = document.getElementById('open-new');
+  const download = document.getElementById('download-menu');
   const currentTitle = document.getElementById('current-title');
   const followNote = document.getElementById('follow-note');
   const pickButton = document.getElementById('pick-comment');
@@ -104,6 +105,8 @@
     // Markdown、图片和音视频在单文件阅读页里看，批注和编辑在阅读页自己的顶栏里。
     const markdown = item && !!item.readUrl;
     pickButton.hidden = commentToggle.hidden = editButton.hidden = !item || markdown;
+    // Markdown 和媒体的阅读页顶栏里自带下载按钮，这里只给 HTML 页面显示。
+    VinxDownloadMenu.set(download, item && !markdown ? item.downloadUrl : '', item && item.downloadNames);
     currentTitle.textContent = item ? item.title : '';
     followNote.textContent = follow ? '有新页面发布时自动切换到最新一个' : '已固定在所选页面；点第一项恢复跟随最新';
     if (!item) return;

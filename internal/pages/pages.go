@@ -66,6 +66,49 @@ func MediaView(record *ojson.Object) string {
 // IsMarkdown 报告文件是否按 Markdown 处理。
 func IsMarkdown(rel string) bool { return markdownSuffixes[textutil.Lower(textutil.Suffix(rel))] }
 
+// DownloadRoute 是下载源文件的保留路由：单个文件原样下载，多个文件打成 zip。
+const DownloadRoute = ReservedDir + "/download"
+
+func downloadNames(record *ojson.Object) *ojson.Object {
+	byTitle, byFile := DownloadNames(record)
+	return ojson.NewObject("title", byTitle, "file", byFile)
+}
+
+// DownloadURL 是短链接的源文件下载地址；加 ?name=file 按原文件名命名，默认按标题。
+func DownloadURL(id string) string { return "/a/" + id + "/" + DownloadRoute }
+
+// unsafeName 是文件名里不能出现的字符（Windows 和各浏览器的交集），换成下划线。
+var unsafeName = strings.NewReplacer("/", "_", "\\", "_", ":", "_", "*", "_", "?", "_", "\"", "_", "<", "_", ">", "_", "|", "_", "\r", " ", "\n", " ", "\t", " ")
+
+// DownloadNames 返回下载文件名的两种选择：按页面标题命名和按原文件名。
+// 清单只有一个文件时保留原扩展名；多个文件打成 zip，zip 内顶层目录与 zip 同名。标题不能做文件名时退回原文件名。
+func DownloadNames(record *ojson.Object) (byTitle, byFile string) {
+	entry := Str(record, "entry")
+	base := entry[strings.LastIndex(entry, "/")+1:]
+	ext := ""
+	if dot := strings.LastIndex(base, "."); dot > 0 {
+		ext = base[dot:]
+	}
+	title := strings.Trim(strings.TrimSpace(unsafeName.Replace(Str(record, "title"))), ". ")
+	if len([]rune(title)) > 80 {
+		title = strings.TrimSpace(string([]rune(title)[:80]))
+	}
+	if len(Files(record)) == 1 {
+		if title == "" {
+			return base, base
+		}
+		if !strings.HasSuffix(textutil.Lower(title), textutil.Lower(ext)) {
+			title += ext
+		}
+		return title, base
+	}
+	byFile = strings.TrimSuffix(base, ext) + ".zip"
+	if title == "" {
+		return byFile, byFile
+	}
+	return title + ".zip", byFile
+}
+
 // ReadURL 是 Markdown 发布的阅读页地址。
 func ReadURL(id string) string { return "/read.html?a=" + id }
 
@@ -700,7 +743,8 @@ func Summary(record *ojson.Object) *ojson.Object {
 		kind, readURL = media, ReadURL(id)
 	}
 	return ojson.NewObject(
-		"id", id, "title", record.Value("title"), "url", "/a/"+id+"/", "kind", kind, "readUrl", readURL,
+		"id", id, "title", record.Value("title"), "url", "/a/"+id+"/", "kind", kind, "readUrl", readURL, "downloadUrl", DownloadURL(id),
+		"downloadNames", downloadNames(record),
 		"root", record.Value("root"), "entry", record.Value("entry"), "fileCount", len(Files(record)),
 		"files", record.Value("files"), "missing", missing, "createdAt", record.Value("createdAt"),
 		"publishedAt", record.Value("publishedAt"), "modifiedAt", modified,
@@ -769,7 +813,7 @@ func ReaderManifest(record *ojson.Object) *ojson.Object {
 			"source", Str(record, "entry")))
 	}
 	return ojson.NewObject("id", "a-"+id, "name", record.Value("title"), "home", home,
-		"version", Version(record), "target", "a:"+id+"/", "content", base, "versionUrl", base+ReservedDir+"/version",
+		"version", Version(record), "target", "a:"+id+"/", "content", base, "versionUrl", base+ReservedDir+"/version", "downloadUrl", DownloadURL(id), "downloadNames", downloadNames(record),
 		"entries", entries)
 }
 
