@@ -11,6 +11,7 @@
   <script src="/assets/vinx-editor.js" defer></script>
   <script src="/assets/vinx-comments.js" defer></script>
   <script src="/assets/download-menu.js" defer></script>
+  <script src="/assets/share-menu.js" defer></script>
   <script src="/assets/published.js" defer></script>
 </head>
 <body class="published">
@@ -30,6 +31,10 @@
           <a href="#" download><span>按标题命名</span><small></small></a>
           <a href="#" download><span>按原文件名</span><small></small></a>
         </div>
+      </details>
+      <details id="share-menu" class="download-menu share-menu" hidden>
+        <summary class="ghost-button" title="把源文件发布到登记的外部服务（如网盘），拿到链接">发布到</summary>
+        <div class="download-options"></div>
       </details>
       <a id="open-new" class="ghost-button" href="#" target="_blank" rel="noopener" hidden>新窗口打开</a>
       <button id="theme-toggle" type="button" class="ghost-button" aria-label="切换深浅色">深浅色</button>

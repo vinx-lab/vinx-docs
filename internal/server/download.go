@@ -1,12 +1,9 @@
 package server
 
 import (
-	"archive/zip"
-	"io"
 	"mime"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/vinx-lab/vinx-docs/internal/ojson"
 	"github.com/vinx-lab/vinx-docs/internal/pages"
@@ -31,20 +28,13 @@ func (q *request) serveDownload(record *ojson.Object) {
 	}
 	const plain = "text/plain; charset=utf-8"
 	gone := []byte("源文件已不存在或已不允许发布")
-	root := pages.Str(record, "root")
-	type item struct{ rel, path string }
-	var items []item
-	for _, rel := range pages.Files(record) {
-		if path, err := pages.CheckFile(root, rel); err == nil {
-			items = append(items, item{rel, path})
-		}
-	}
+	items, _ := pages.CheckSources(record)
 	if len(items) == 0 {
 		q.sendPage(404, gone, plain)
 		return
 	}
-	if len(pages.Files(record)) == 1 {
-		file, err := os.Open(items[0].path)
+	if !pages.Bundled(record) {
+		file, err := os.Open(items[0].Path)
 		var info os.FileInfo
 		if err == nil {
 			defer file.Close()
@@ -54,46 +44,18 @@ func (q *request) serveDownload(record *ojson.Object) {
 			q.sendPage(404, gone, plain)
 			return
 		}
-		q.setPageHeaders(pages.MimeFor(items[0].rel))
+		q.setPageHeaders(pages.MimeFor(items[0].Rel))
 		q.setHeaders("Content-Disposition", attachment(name))
 		http.ServeContent(q.w, q.r, "", info.ModTime(), file)
 		return
 	}
 	q.setPageHeaders("application/zip")
 	q.setHeaders("Content-Disposition", attachment(name))
-	dir := strings.TrimSuffix(name, ".zip")
 	q.w.WriteHeader(200)
 	if q.isHead {
 		return
 	}
-	archive := zip.NewWriter(q.w)
-	for _, it := range items {
-		file, err := os.Open(it.path)
-		if err != nil {
-			continue // 打开前一刻被删掉的文件跳过；其余文件照常打包
-		}
-		info, err := file.Stat()
-		if err != nil {
-			file.Close()
-			continue
-		}
-		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			file.Close()
-			continue
-		}
-		header.Name = dir + "/" + it.rel
-		header.Method = zip.Deflate
-		writer, err := archive.CreateHeader(header)
-		if err == nil {
-			_, err = io.Copy(writer, file)
-		}
-		file.Close()
-		if err != nil {
-			abort() // 响应已经开始，只能断开连接，浏览器会显示下载失败
-		}
-	}
-	if err := archive.Close(); err != nil {
-		abort()
+	if _, err := pages.WriteSource(record, items, name, q.w); err != nil {
+		abort() // 响应已经开始，只能断开连接，浏览器会显示下载失败
 	}
 }

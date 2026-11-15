@@ -20,6 +20,8 @@ import (
 	"github.com/vinx-lab/vinx-docs/internal/ojson"
 	"github.com/vinx-lab/vinx-docs/internal/pages"
 	"github.com/vinx-lab/vinx-docs/internal/server"
+	"github.com/vinx-lab/vinx-docs/internal/share"
+	_ "github.com/vinx-lab/vinx-docs/internal/share/adapters/gdrive" // 内置的 Google Drive 适配器
 	"github.com/vinx-lab/vinx-docs/internal/textutil"
 )
 
@@ -51,6 +53,15 @@ var groups = []group{
 		{"publish", "发布一个本地 HTML 页面、Markdown、图片或音视频文件，得到短链接"},
 		{"unpublish", "取消一个短链接，不删源文件"},
 		{"artifacts", "列出已发布的页面"},
+	}},
+	{"外部发布", "share", [][2]string{
+		{"share", "把短链接页面的源文件发布到登记的外部服务（如 Google Drive）"},
+		{"unshare", "撤回一条外部发布"},
+		{"shares", "列出外部发布记录"},
+		{"share-target", "登记、查看、检查、删除发布目标（外部适配器只能在这里登记）"},
+		{"share-account", "连接、查看、断开服务商账号（如 Google 账号）"},
+		{"share-provider", "保存服务商设置（如 Google OAuth 客户端）"},
+		{"share-adapter", "查看内置适配器，跑外部适配器的一致性测试"},
 	}},
 	{"批注", "comments", [][2]string{
 		{"comments", "列出批注"},
@@ -146,6 +157,8 @@ func Main(args []string) int {
 		return pagesMain(args)
 	case "comments":
 		return commentsMain(args)
+	case "share":
+		return shareMain(args)
 	case "self":
 		home, err := config.DataHome()
 		if err != nil {
@@ -409,6 +422,17 @@ func pagesMain(args []string) int {
 			return finishCommand(err)
 		}
 		fmt.Fprintf(stdout, "已取消：%s（%s）；源文件未改动\n", textutil.Str(record.Value("id")), textutil.Str(record.Value("title")))
+		if records, err := share.LoadRecords(home); err == nil {
+			live := 0
+			for _, r := range records {
+				if r.Source.ID == textutil.Str(record.Value("id")) && r.Live() {
+					live++
+				}
+			}
+			if live > 0 {
+				fmt.Fprintf(stdout, "提示：这个页面还有 %d 处外部发布，没有自动撤回；需要的话用 vinx-docs shares 查看、vinx-docs unshare 撤回\n", live)
+			}
+		}
 	default:
 		items, err := pages.Listing(registry)
 		if err != nil {

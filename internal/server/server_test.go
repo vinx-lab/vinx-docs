@@ -24,6 +24,8 @@ import (
 	"github.com/vinx-lab/vinx-docs/internal/config"
 	"github.com/vinx-lab/vinx-docs/internal/pages"
 	"github.com/vinx-lab/vinx-docs/internal/server"
+	"github.com/vinx-lab/vinx-docs/internal/share"
+	_ "github.com/vinx-lab/vinx-docs/internal/share/adapters/gdrive"
 	"github.com/vinx-lab/vinx-docs/internal/testutil"
 )
 
@@ -32,6 +34,9 @@ const childEnv = "VINX_SERVER_TEST_CHILD"
 // TestMain：manage 的 start 会以 "<程序> serve" 启动子进程；测试里程序就是测试二进制本身，
 // 带上 childEnv 时直接作为服务运行。
 func TestMain(m *testing.M) {
+	// 内置的发布适配器由测试程序自己扮演（见 share.UseTestBinaryForBuiltins）。
+	share.RunTestAdapterIfRequested()
+	share.UseTestBinaryForBuiltins()
 	if os.Getenv(childEnv) == "1" {
 		assets.Install()
 		if err := server.Serve(os.Getenv("VINX_DOCS_HOME")); err != nil {

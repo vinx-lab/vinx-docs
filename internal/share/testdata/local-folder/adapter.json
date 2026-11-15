@@ -1,0 +1,17 @@
+{
+  "id": "local-folder",
+  "name": "本机目录（示例）",
+  "version": "1.0.0",
+  "protocol": [1],
+  "command": ["./adapter.sh"],
+  "capabilities": {
+    "publicLink": true,
+    "privateLink": true,
+    "update": true,
+    "stableLinkOnUpdate": true,
+    "revoke": true
+  },
+  "config": [
+    { "name": "root", "required": true, "description": "存放发布文件的本机目录" }
+  ]
+}

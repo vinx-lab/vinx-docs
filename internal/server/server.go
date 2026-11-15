@@ -26,6 +26,7 @@ import (
 	"github.com/vinx-lab/vinx-docs/internal/config"
 	"github.com/vinx-lab/vinx-docs/internal/ojson"
 	"github.com/vinx-lab/vinx-docs/internal/pages"
+	"github.com/vinx-lab/vinx-docs/internal/share"
 	"github.com/vinx-lab/vinx-docs/internal/textutil"
 )
 
@@ -107,6 +108,7 @@ type Server struct {
 	Auto         *AutoSync
 	Vinx         *api.API
 	Auth         *auth.Store
+	Share        *share.Service
 
 	Host     string // 监听的地址（配置里的原值，如 0.0.0.0）
 	Port     int    // 实际端口（传 0 时是系统分配的端口）
@@ -188,6 +190,8 @@ func Create(root string, host *string, port *int) (*Server, error) {
 		listener:     listener,
 	}
 	s.Auto = &AutoSync{server: s}
+	s.Share = share.NewService(root, s.RegistryPath, Stderr)
+	s.Share.Recover()
 	s.Vinx = api.New(root, "", func() error {
 		_, err := build.Refresh(s.ConfigPath, s.Output, "", "")
 		return err
@@ -216,6 +220,7 @@ func (s *Server) Serve() error {
 func (s *Server) Shutdown(timeout time.Duration) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
+	s.Share.Close()
 	if err := s.http.Shutdown(ctx); err != nil {
 		_ = s.http.Close()
 	}
@@ -562,7 +567,11 @@ func (q *request) serveArtifact(path string) {
 		return
 	}
 	if rel == pages.ReservedDir+"/manifest" {
-		q.sendPage(200, []byte(ojson.DumpsASCII(pages.ReaderManifest(record), -1)), "application/json; charset=utf-8")
+		manifest := pages.ReaderManifest(record)
+		if !q.external {
+			manifest.Set("shareTargets", q.s.shareTargetCount(pages.Str(record, "id")))
+		}
+		q.sendPage(200, []byte(ojson.DumpsASCII(manifest, -1)), "application/json; charset=utf-8")
 		return
 	}
 	if rel == pages.DownloadRoute {
@@ -641,6 +650,10 @@ func (q *request) doGet() {
 		q.reply(q.s.Vinx.ServeGet(path, textutil.ParseQS(q.query)))
 		return
 	}
+	if shareGets[path] {
+		q.serveShareGet(path)
+		return
+	}
 	// 下面几个接口按完整请求目标比较（带查询串就不匹配）。
 	switch q.full {
 	case "/api/auth":
@@ -661,6 +674,7 @@ func (q *request) doGet() {
 		for _, item := range items {
 			if obj, ok := item.(*ojson.Object); ok {
 				obj.Set("publicUntil", q.s.publicUntil(obj))
+				obj.Set("externalShares", q.s.liveShares(textutil.Str(obj.Value("id"))))
 			}
 		}
 		q.reply(200, ojson.NewObject("artifacts", items))
@@ -894,6 +908,12 @@ func (q *request) doPost() {
 	if spec, ok := api.PostRoutes[q.full]; ok {
 		if body, ok := q.parseBody(spec); ok {
 			q.reply(q.s.Vinx.ServePost(q.full, body))
+		}
+		return
+	}
+	if spec, ok := sharePosts[q.full]; ok {
+		if body, ok := q.parseBody(spec); ok {
+			q.serveSharePost(body)
 		}
 		return
 	}

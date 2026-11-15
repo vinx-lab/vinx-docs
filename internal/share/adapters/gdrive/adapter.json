@@ -1,0 +1,27 @@
+{
+  "id": "google-drive",
+  "name": "Google Drive",
+  "version": "1.0.0",
+  "protocol": [1],
+  "builtin": true,
+  "passEnv": ["VINX_GDRIVE_ENDPOINT"],
+  "capabilities": {
+    "publicLink": true,
+    "privateLink": true,
+    "update": true,
+    "stableLinkOnUpdate": true,
+    "revoke": true,
+    "auth": "device"
+  },
+  "provider": [
+    { "name": "clientId", "required": true, "description": "Google OAuth 客户端 ID（类型：电视和输入受限的设备）" }
+  ],
+  "providerSecrets": [
+    { "name": "clientSecret", "required": true, "description": "Google OAuth 客户端密钥" }
+  ],
+  "config": [
+    { "name": "dir", "required": false, "description": "网盘里的目标目录，如「Vinx 分享」；可以写多级，如「Vinx/客户A」；留空放在根目录" }
+  ],
+  "secrets": [],
+  "docs": "https://github.com/vinx-lab/vinx-docs/blob/main/internal/share/adapters/gdrive/README.md"
+}

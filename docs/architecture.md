@@ -62,6 +62,13 @@ GET /a/<短码>/<路径>  -->  服务
 GET /a/<短码>/__docsify_x/download  -->  下载源文件
   -> 清单只有一个文件：原样发送（HTML不注入脚本），Content-Disposition 带原文件名
   -> 多个文件：清单里仍通过检查的文件按原目录结构打成 zip（顶层目录用标题）
+
+POST /api/shares {page, target}  -->  发布到外部服务（只有内网；spec 0008）
+  -> 目标来自 config/share-targets.json（后台或命令行管理；外部适配器只能命令行登记），必须允许 pages
+  -> 清单里有文件没通过检查就拒绝；内容同「下载源文件」，写进临时目录
+  -> 记录先落盘为 pending，再按协议 v1 执行适配器（一次性进程：stdin 一行请求，stdout NDJSON 事件；
+     内置的 Google Drive 以 vinx-docs share-adapter run google-drive 运行，令牌在 share-state/<适配器>/<账号>/）
+  -> 结果写回 config/shares.json：active / unknown（超时、异常退出）/ 首次失败删除记录
 ```
 
 安全边界：短链接页面与管理后台同属8000的origin，因此响应带 `Content-Security-Policy: sandbox allow-scripts …`（不给 `allow-same-origin`）。页面的origin变成 `null`，写接口的 `Origin` 校验会拒绝它；加载资源只允许本站，外部CDN被拦截。只对 `Origin: null` 回 `Access-Control-Allow-Origin: null`，页面才能 `fetch` 同清单里的JSON。短链接响应只能有这一条策略：如果再叠加站点级 CSP，两条策略取交集，会拦掉页面脚本和 iframe（由 `internal/server/server_test.go` 守住）。

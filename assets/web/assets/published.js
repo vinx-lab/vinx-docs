@@ -6,6 +6,7 @@
   const empty = document.getElementById('artifact-empty');
   const openNew = document.getElementById('open-new');
   const download = document.getElementById('download-menu');
+  const shareMenu = document.getElementById('share-menu');
   const currentTitle = document.getElementById('current-title');
   const followNote = document.getElementById('follow-note');
   const pickButton = document.getElementById('pick-comment');
@@ -107,6 +108,9 @@
     pickButton.hidden = commentToggle.hidden = editButton.hidden = !item || markdown;
     // Markdown 和媒体的阅读页顶栏里自带下载按钮，这里只给 HTML 页面显示。
     VinxDownloadMenu.set(download, item && !markdown ? item.downloadUrl : '', item && item.downloadNames);
+    if (shareMenu.dataset.page !== (item && !markdown ? item.id : '')) VinxShareMenu.set(shareMenu, item && !markdown ? item.id : '');
+    // 单独打开的 HTML 页面点「发布到…」会带 ?share=<短码> 跳过来：选中它后直接弹出发布框。
+    if (item && params.get('share') === item.id) { params.delete('share'); history.replaceState(null, '', location.pathname + location.hash); VinxShareMenu.open(shareMenu, item.id); }
     currentTitle.textContent = item ? item.title : '';
     followNote.textContent = follow ? '有新页面发布时自动切换到最新一个' : '已固定在所选页面；点第一项恢复跟随最新';
     if (!item) return;
@@ -142,6 +146,8 @@
       // 经反向代理访问时，发布后一段时间内不登录也能只读打开。
       const left = (item.publicUntil || 0) - Date.now() / 1000;
       if (left > 0) time.textContent += ' · 外部免登录还剩 ' + (left >= 3600 ? Math.floor(left / 3600) + ' 小时' : Math.ceil(left / 60) + ' 分钟');
+      // 取消发布短链接不会撤回已经发到外部服务的文件，这里提醒还有几处。
+      if (item.externalShares > 0) time.textContent += ' · 已发布到 ' + item.externalShares + ' 处外部服务';
       if (item.missing.length) time.dataset.state = 'warning';
       link.append(title, meta, time);
       link.addEventListener('click', event => {

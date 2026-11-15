@@ -377,6 +377,7 @@
     watchUpdates(meta.versionUrl || manifestUrl, meta.version);
     // 短链接：下载源文件（单个文件原样下载，多个文件打成 zip）。
     if (shortId && window.VinxDownloadMenu) VinxDownloadMenu.set(document.getElementById('download-menu'), meta.downloadUrl, meta.downloadNames);
+    if (shortId && window.VinxShareMenu) VinxShareMenu.set(document.getElementById('share-menu'), shortId);
     let source = meta.home;
 
     const searchInput = document.getElementById('reader-search-input');

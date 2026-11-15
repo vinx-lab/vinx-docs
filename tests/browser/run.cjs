@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // 对一个编译好的 vinx-docs 二进制跑全部真实浏览器测试：阅读页（browser.cjs）、
-// 短链接/批注/编辑（vinx.cjs）、Markdown 短链接（markdown.cjs）、后台接入与同步（control-browser.cjs）。
+// 短链接/批注/编辑（vinx.cjs）、Markdown 短链接（markdown.cjs）、后台接入与同步（control-browser.cjs）、
+// 发布到外部服务（share.cjs，用假 Google 服务）。
 //
 // 用法：
 //   PLAYWRIGHT_MODULE=<playwright-core 模块目录> \
@@ -48,8 +49,8 @@ function write(file, content) {
 }
 
 // 服务要用的环境：只认临时家目录，清掉可能指向真实数据或改变监听地址的变量。
-function envFor(home) {
-  const env = { ...process.env, VINX_DOCS_HOME: home };
+function envFor(home, extra = {}) {
+  const env = { ...process.env, VINX_DOCS_HOME: home, ...extra };
   for (const key of ['VINX_DOCS_DB', 'VINX_DOCS_ASSETS', 'VINX_DOCS_LISTEN']) delete env[key];
   return env;
 }
@@ -88,11 +89,11 @@ function writeConfig(home, port, projects) {
 }
 
 class Server {
-  constructor(home, port, name) {
+  constructor(home, port, name, extra = {}) {
     this.port = port;
     this.logPath = path.join(WORK, `${name}-server.log`);
     this.log = fs.openSync(this.logPath, 'a');
-    this.child = spawn(binary, ['serve'], { cwd: WORK, env: envFor(home), stdio: ['ignore', this.log, this.log] });
+    this.child = spawn(binary, ['serve'], { cwd: WORK, env: envFor(home, extra), stdio: ['ignore', this.log, this.log] });
     this.exited = false;
     this.child.on('exit', () => { this.exited = true; });
     this.child.on('error', () => { this.exited = true; });
@@ -137,6 +138,25 @@ function runNode(script, scriptArgs, timeoutMs = 180000) {
     child.on('close', (code) => {
       clearTimeout(timer);
       resolve({ code: code === null ? 1 : code, output: output.trim() });
+    });
+  });
+}
+
+// 编译并启动假 Google 服务，读第一行地址。先编译再运行，结束时能按 PID 停掉它。
+function startFakeDrive() {
+  const exe = path.join(WORK, 'fakedrive');
+  const build = spawnSync('go', ['build', '-o', exe, './tests/browser/fakedrive'], { cwd: REPO, encoding: 'utf8' });
+  if (build.status !== 0) return Promise.resolve({ child: { kill() {} }, output: String(build.error || build.stderr) });
+  return new Promise((resolve) => {
+    const child = spawn(exe, [], { cwd: WORK, stdio: ['ignore', 'pipe', 'pipe'] });
+    let output = '';
+    const timer = setTimeout(() => resolve({ child, output: output + '\n超时' }), 120000);
+    child.on('error', (error) => { clearTimeout(timer); resolve({ child, output: String(error) }); });
+    child.stderr.on('data', (chunk) => { output += chunk; });
+    child.stdout.on('data', (chunk) => {
+      output += chunk;
+      const line = output.split('\n').find(l => l.startsWith('http://'));
+      if (line) { clearTimeout(timer); resolve({ child, url: line.trim() }); }
     });
   });
 }
@@ -230,6 +250,55 @@ async function main() {
     record('后台服务', 1, String(error && error.message || error));
   } finally {
     await server.stop();
+  }
+
+  // 发布到外部服务：假 Google 服务（tests/browser/fakedrive，需要 Go）提供设备码授权和 Drive 接口。
+  const fake = await startFakeDrive();
+  if (!fake.url) {
+    record('tests/browser/share.cjs（发布到外部服务）', 1, '假 Google 服务启动失败（需要 Go）：\n' + fake.output);
+  } else {
+    const sharePort = await freePort();
+    const shareHome = path.join(WORK, 'share-home');
+    writeConfig(shareHome, sharePort, []);
+    const shareEnv = { VINX_GDRIVE_ENDPOINT: fake.url };
+    // 外部适配器：第一次 publish 卡住（超时后结果未知），之后正常返回，用来验证「重试」。只能在命令行登记。
+    const slow = path.join(WORK, 'slow-adapter');
+    write(path.join(slow, 'adapter.json'), JSON.stringify({ id: 'slow', name: '慢适配器', version: '1', protocol: [1], command: ['x'],
+      capabilities: { publicLink: false, privateLink: true, update: true, stableLinkOnUpdate: true, revoke: true } }));
+    write(path.join(slow, 'adapter.sh'), '#!/bin/sh\nmarker="$VINX_SHARE_STATE_DIR/called"\n' +
+      'if [ "$VINX_SHARE_METHOD" = publish ] && [ ! -f "$marker" ]; then touch "$marker"; sleep 30; fi\n' +
+      'case "$VINX_SHARE_METHOD" in check) echo \'{"event":"result","data":{"account":"slow"}}\' ;; ' +
+      'publish) echo \'{"event":"result","data":{"url":"https://example.invalid/slow","remoteId":"slow-1","public":false}}\' ;; ' +
+      'revoke) echo \'{"event":"result","data":{"alreadyGone":false}}\' ;; esac\n');
+    fs.chmodSync(path.join(slow, 'adapter.sh'), 0o755);
+    const cli = (...cliArgs) => spawnSync(binary, cliArgs, { cwd: WORK, env: envFor(shareHome, shareEnv), encoding: 'utf8' });
+    const shareMd = path.join(WORK, 'share-src', 'plan.md');
+    write(shareMd, '# 发布测试\n\n![图](a.png)\n');
+    write(path.join(WORK, 'share-src', 'a.png'), fs.readFileSync(path.join(WORK, 'page', 'a.png')));
+    write(path.join(WORK, 'share-src', 'proto.html'), '<!doctype html><title>原型</title><h1>原型</h1>');
+    const setup = [
+      cli('share-target', 'add', 'slow', '--manifest', path.join(slow, 'adapter.json'), '--label', '慢目标', '--allow', 'pages',
+        '--timeout', '2s', '--', path.join(slow, 'adapter.sh')),
+    ];
+    const mdPublish = cli('publish', shareMd, '--json');
+    const htmlPublish = cli('publish', path.join(WORK, 'share-src', 'proto.html'), '--json');
+    const bad = [...setup, mdPublish, htmlPublish].find(r => r.status !== 0 && r.status !== 3);
+    if (bad) {
+      record('tests/browser/share.cjs（发布到外部服务）', 1, `准备失败（退出码 ${bad.status}）\n${bad.stdout}\n${bad.stderr}`);
+    } else {
+      server = new Server(shareHome, sharePort, 'share', shareEnv);
+      try {
+        await server.ready();
+        const shareResult = await runNode(path.join(HERE, 'share.cjs'), [`http://127.0.0.1:${sharePort}`, fake.url,
+          JSON.parse(mdPublish.stdout).id, JSON.parse(htmlPublish.stdout).id, shareMd, OUT]);
+        record('tests/browser/share.cjs（发布到外部服务）', shareResult.code, shareResult.output);
+      } catch (error) {
+        record('发布服务', 1, String(error && error.message || error));
+      } finally {
+        await server.stop();
+      }
+    }
+    fake.child.kill();
   }
 
   let failed = 0;
