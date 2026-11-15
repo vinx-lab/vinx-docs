@@ -1,4 +1,4 @@
-/* 后台「外部发布」（spec 0008 第 4 节）：服务商设置、账号（设备码授权）、发布目标。只能在内网操作。 */
+/* 后台「外部发布」（spec 0008 第 4 节）：服务商设置、账号（设备码授权）、发布目标。内网或外部访问登录后可用。 */
 (function () {
   const root = document.getElementById('share-admin');
   const statusLine = document.getElementById('share-status');
@@ -270,6 +270,6 @@
   }
 
   window.addEventListener('beforeunload', stopConnecting);
-  // 管理页对外部访问者整体要求登录；这里的接口只接受内网，外部访问会得到说明。
+  // 管理页对外部访问者整体要求登录；登录后这里的接口和内网一样可用。
   load();
 })();

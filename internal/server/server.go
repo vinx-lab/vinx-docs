@@ -568,7 +568,7 @@ func (q *request) serveArtifact(path string) {
 	}
 	if rel == pages.ReservedDir+"/manifest" {
 		manifest := pages.ReaderManifest(record)
-		if !q.external {
+		if !q.guest() {
 			manifest.Set("shareTargets", q.s.shareTargetCount(pages.Str(record, "id")))
 		}
 		q.sendPage(200, []byte(ojson.DumpsASCII(manifest, -1)), "application/json; charset=utf-8")

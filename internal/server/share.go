@@ -68,8 +68,8 @@ func (q *request) serveShareGet(path string) {
 	}
 	switch path {
 	case "/api/share-targets":
-		// 经反向代理的外部访问不能发布：不列出目标，页面上就不显示「发布到」。
-		if q.external {
+		// 未登录的外部访问到不了这里（gate 返回 401）；保留判断防止以后放开读取时漏掉。
+		if q.guest() {
 			q.reply(200, ojson.NewObject("targets", []any{}, "canWrite", false))
 			return
 		}
@@ -90,10 +90,10 @@ func (q *request) serveShareGet(path string) {
 			q.shareError(err)
 			return
 		}
-		q.reply(200, ojson.NewObject("shares", jsonValue(shares), "canWrite", !q.external))
+		q.reply(200, ojson.NewObject("shares", jsonValue(shares), "canWrite", !q.guest()))
 	case "/api/share-admin":
-		if q.external {
-			q.reply(403, errorBody("只有内网可以管理外部发布"))
+		if q.guest() {
+			q.reply(401, errorBody("需要登录"))
 			return
 		}
 		data, err := q.s.Share.Admin()
@@ -113,8 +113,8 @@ func (q *request) serveShareGet(path string) {
 }
 
 func (q *request) serveSharePost(body *ojson.Object) {
-	if q.external {
-		q.reply(403, errorBody("只有内网可以发布到外部服务、撤回或管理目标"))
+	if q.guest() {
+		q.reply(401, errorBody("需要登录"))
 		return
 	}
 	str := func(key string) string { value, _ := body.Value(key).(string); return value }

@@ -67,7 +67,7 @@
         options[0].textContent = '按标题命名：' + names.title;
         options[1].textContent = '按原文件名：' + names.file;
         if (names.title === names.file) options[1].remove();
-        // 有可用的发布目标时（只有内网访问会给出数量）才显示「发布到…」，到页面列表里操作：这里在沙箱里，不能调接口。
+        // 有可用的发布目标时（内网或外部登录后才会给出数量）才显示「发布到…」，到页面列表里操作：这里在沙箱里，不能调接口。
         if (meta.shareTargets > 0) bar.insertBefore(make('/published.html?share=' + code + '#' + code, '发布到…'), comment);
       }).catch(() => { /* 取不到名字时保留通用文字 */ });
       const comment = make('/published.html#' + code, '在 Vinx Docs 中批注');

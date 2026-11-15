@@ -63,7 +63,7 @@ GET /a/<短码>/__docsify_x/download  -->  下载源文件
   -> 清单只有一个文件：原样发送（HTML不注入脚本），Content-Disposition 带原文件名
   -> 多个文件：清单里仍通过检查的文件按原目录结构打成 zip（顶层目录用标题）
 
-POST /api/shares {page, target}  -->  发布到外部服务（只有内网；spec 0008）
+POST /api/shares {page, target}  -->  发布到外部服务（内网或外部登录后；spec 0008）
   -> 目标来自 config/share-targets.json（后台或命令行管理；外部适配器只能命令行登记），必须允许 pages
   -> 清单里有文件没通过检查就拒绝；内容同「下载源文件」，写进临时目录
   -> 记录先落盘为 pending，再按协议 v1 执行适配器（一次性进程：stdin 一行请求，stdout NDJSON 事件；

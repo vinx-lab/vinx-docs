@@ -11,7 +11,7 @@
 - 短链接可以下载源文件：阅读页顶栏（Markdown、图片、音视频）、页面列表顶栏和单独打开的 HTML 页面右下角都有「下载源文件」，可选按标题命名或按原文件名。只有一个文件时原样下载，有多个文件时按原目录结构打成 zip，HTML 不含注入的脚本，见 [spec 0007](https://github.com/vinx-lab/vinx-docs/blob/main/docs/specs/0007-short-link-download-and-toc.md)。
 - 短链接阅读页的本页目录移到左侧：固定在屏幕中部，滚动时高亮当前小节，可以收起和展开（宽屏记住选择，手机默认收起）；收二到四级标题，按层级折叠，默认只展开当前小节所在的分支。
 - 外部访问密码不再限制长度和字符，只要求不为空。
-- 短链接可以发布到外部服务：「下载源文件」旁边的「发布到 ▾」列出登记的目标（同一个服务商可以有多个账号、多个目录），发布后显示链接；源文件改了提示「源文件已修改」，点「更新」覆盖原文件、链接不变；可以撤回。内置 Google Drive（直接调用 Drive API，不用另装程序）：在后台「外部发布」填写 OAuth 客户端，用验证码在任意设备上授权，可以连接多个账号、每个账号多个目录。目标默认不允许发布任何来源，公开链接要再确认；只有内网能发布和管理。服务商由适配器接入（协议 v1：一次性进程 + NDJSON），外部适配器只能在命令行登记；命令行 `share` `unshare` `shares` `share-target` `share-account` `share-provider`，见 [spec 0008](https://github.com/vinx-lab/vinx-docs/blob/main/docs/specs/0008-share-targets.md)、[ADR 0006](https://github.com/vinx-lab/vinx-docs/blob/main/docs/architecture-decisions/0006-share-adapters-via-local-commands.md) 与 [发布到外部服务](https://github.com/vinx-lab/vinx-docs/blob/main/docs/share-targets.md)。
+- 短链接可以发布到外部服务：「下载源文件」旁边的「发布到 ▾」列出登记的目标（同一个服务商可以有多个账号、多个目录），发布后显示链接；源文件改了提示「源文件已修改」，点「更新」覆盖原文件、链接不变；可以撤回。内置 Google Drive（直接调用 Drive API，不用另装程序）：在后台「外部发布」填写 OAuth 客户端，用验证码在任意设备上授权，可以连接多个账号、每个账号多个目录。目标默认不允许发布任何来源，公开链接要再确认；内网和已登录的外部访问能发布和管理。服务商由适配器接入（协议 v1：一次性进程 + NDJSON），外部适配器只能在命令行登记；命令行 `share` `unshare` `shares` `share-target` `share-account` `share-provider`，见 [spec 0008](https://github.com/vinx-lab/vinx-docs/blob/main/docs/specs/0008-share-targets.md)、[ADR 0006](https://github.com/vinx-lab/vinx-docs/blob/main/docs/architecture-decisions/0006-share-adapters-via-local-commands.md) 与 [发布到外部服务](https://github.com/vinx-lab/vinx-docs/blob/main/docs/share-targets.md)。
 - 批注抽屉新增「全部交给 agent（N）」：先逐条「保存批注」，写完后把本页所有待处理批注按编号顺序一次交给 agent。
 
 ### 修复

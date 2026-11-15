@@ -48,7 +48,7 @@
     const box = menu.querySelector('.download-options');
     if (!state || !state.canWrite) { menu.hidden = true; menu.open = false; return; }
     if (!state.targets.length) {
-      // 内网访问、还没有可用目标：引导去后台添加。
+      // 能发布（内网或外部登录后）、还没有可用目标：引导去后台添加。
       box.replaceChildren(el('a', { href: '/admin.html#share', target: '_top' }, el('span', null, '去后台添加发布目标'),
         el('small', null, '连接网盘账号后，这里会列出可以发布到的位置')));
       menu.hidden = false;

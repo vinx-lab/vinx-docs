@@ -96,6 +96,7 @@ func TestShareAccessControl(t *testing.T) {
 	f.setPassword(t, "pw")
 	cookie := sessionCookie(t, f.login(t, "203.0.113.5", "pw"))
 	authed := externalPost("203.0.113.5", map[string]string{"Cookie": cookie})
+	crossSite := external("203.0.113.5", map[string]string{"Cookie": cookie, "Origin": "https://evil.example"})
 	writes := map[string]map[string]any{
 		"/api/shares":                 {"page": f.fresh, "target": f.target},
 		"/api/share-providers/set":    {"adapter": "google-drive"},
@@ -104,22 +105,45 @@ func TestShareAccessControl(t *testing.T) {
 		"/api/share-targets/remove":   {"id": f.target},
 	}
 	for path, body := range writes {
-		if r := f.post(path, body, authed); r.status != 403 {
-			t.Errorf("外部已登录访问 %s 应返回 403：%d", path, r.status)
-		}
 		if r := f.post(path, body, externalPost("203.0.113.6", nil)); r.status != 401 {
 			t.Errorf("匿名外部访问 %s 应返回 401：%d", path, r.status)
+		}
+		if r := f.post(path, body, crossSite); r.status != 403 {
+			t.Errorf("已登录但跨站的请求 %s 应返回 403：%d", path, r.status)
 		}
 		if r := f.post(path, body, map[string]string{"Origin": "null"}); r.status != 403 {
 			t.Errorf("沙箱页面（Origin: null）访问 %s 应返回 403：%d", path, r.status)
 		}
 	}
-	if r := f.get("/api/share-admin", external("203.0.113.5", map[string]string{"Cookie": cookie})); r.status != 403 {
-		t.Errorf("外部访问后台数据应返回 403：%d", r.status)
+	if r := f.get("/api/share-admin", external("203.0.113.6", nil)); r.status != 401 {
+		t.Errorf("匿名外部访问后台数据应返回 401：%d", r.status)
 	}
-	if r := f.get("/api/share-targets?page="+f.fresh, external("203.0.113.5", map[string]string{"Cookie": cookie})); r.status != 200 ||
-		len(r.json(t)["targets"].([]any)) != 0 {
-		t.Errorf("外部访问不应列出目标：%d %s", r.status, r.body)
+
+	// 外部登录后和内网一样：能看后台、列出目标、发布。
+	if r := f.get("/api/share-admin", external("203.0.113.5", map[string]string{"Cookie": cookie})); r.status != 200 ||
+		strings.Contains(string(r.body), "hidden-secret") {
+		t.Errorf("外部登录后应能读后台数据且不含密钥：%d %s", r.status, r.body)
+	}
+	r := f.get("/api/share-targets?page="+f.fresh, external("203.0.113.5", map[string]string{"Cookie": cookie}))
+	if r.status != 200 || len(r.json(t)["targets"].([]any)) != 1 || r.json(t)["canWrite"] != true {
+		t.Errorf("外部登录后应列出目标：%d %s", r.status, r.body)
+	}
+	r = f.post("/api/shares", map[string]any{"page": f.fresh, "target": f.target}, authed)
+	if r.status != 202 {
+		t.Fatalf("外部登录后应能发布：%d %s", r.status, r.body)
+	}
+	if job := waitJob(t, f.accessFixture, r.json(t)["job"].(map[string]any)["id"].(string)); job["status"] != "done" {
+		t.Errorf("外部登录后发布应成功：%v", job)
+	}
+
+	// 短链接免登录期内的匿名访问者看不到发布目标数量；登录后能看到。
+	manifest := "/a/" + f.fresh + "/__docsify_x/manifest"
+	if r := f.get(manifest, external("203.0.113.6", nil)); r.status == 200 && strings.Contains(string(r.body), "shareTargets") {
+		t.Errorf("匿名外部访问的清单不应包含 shareTargets：%s", r.body)
+	}
+	if r := f.get(manifest, external("203.0.113.5", map[string]string{"Cookie": cookie})); r.status != 200 ||
+		!strings.Contains(string(r.body), `"shareTargets": 1`) {
+		t.Errorf("外部登录后清单应包含 shareTargets：%d %s", r.status, r.body)
 	}
 }
 
