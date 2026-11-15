@@ -343,7 +343,7 @@ vinx-docs share-provider set google-drive --config clientId=… --secret clientS
 - 首次发布：先按 `appProperties` 里的 `vinxKey=<key>` 查找文件；找到就覆盖，找不到就用可续传上传（`uploadType=resumable`）新建，并写入 `vinxKey`。
 - 更新：`files.update` 加可续传上传覆盖内容，文件 ID 和链接不变。
 - 链接：公开时用 `permissions.create` 加 `{type: anyone, role: reader}`；非公开时不加权限。两种情况都返回文件的 `webViewLink`。
-- 撤回：把文件移到回收站（`trashed=true`）。链接随之失效，用户还能从回收站恢复。文件已经不存在时算成功。
+- 撤回：先删除「知道链接的任何人」权限（`permissions/anyoneWithLink`，非公开文件返回 404 时忽略），再把文件移到回收站（`trashed=true`）。只移到回收站不够：实测回收站里的文件通过公开链接仍能查看和下载。用户还能从回收站恢复，恢复后只有本人能看。文件已经不存在时算成功。
 
 **错误映射**：401 先刷新令牌再重试一次，刷新返回 `invalid_grant` 时报 `auth_required`；403 `storageQuotaExceeded` 报 `quota_exceeded`；403 `rateLimitExceeded` / `userRateLimitExceeded` 和 429 报 `rate_limited`；404 报 `not_found`；5xx 和网络错误报 `network`。
 
@@ -441,7 +441,7 @@ internal/share/adapters/<id>/
   - 后台：填写服务商设置后，密钥不回显；连接账号时显示网址和验证码，假服务端「授权」后显示邮箱；连接第二个账号；为两个账号各建一个目标，其中一个公开（有二次确认）；删除仍有记录的目标时有提示。
   - 阅读页：菜单列出两个目标并标明账号和是否公开；发布后显示链接和复制按钮；修改源文件后显示「源文件已修改」，更新成功且链接不变；撤回成功；令牌失效时显示「重新连接」；超时显示「结果未知」，重试成功。
   - 单独打开的 HTML 页面能跳到页面列表并展开菜单。
-- **Google Drive 实测**（需要 V大 创建 OAuth 客户端并用测试账号授权，完成前列为未验证项）：
+- **Google Drive 实测**（需要维护者创建 OAuth 客户端并用测试账号授权）：
   - 在手机上完成设备码授权；连接两个账号；
   - 单文件和 zip 能上传；非公开链接只有本人能打开，公开链接在未登录时也能打开；
   - 更新后链接不变；重复发布不会产生重复文件；
@@ -461,7 +461,7 @@ internal/share/adapters/<id>/
 
 ## 结果
 
-已实现，Google Drive 的真实账号实测未做（见下）。
+已实现。Google Drive 真实账号的主要流程已实测通过，实测中发现并修复了 3 个问题（见 `docs/share-targets-test.md` 第 3 节）。
 
 **改动**
 
@@ -491,7 +491,7 @@ internal/share/adapters/<id>/
 
 **未验证**
 
-- Google Drive 真实账号：需要按适配器说明创建 OAuth 客户端，并用测试账号授权。验证项见 `internal/share/adapters/gdrive/README.md`「测试」一节。
+- Google Drive 真实账号的剩余项：第二个账号、授权被撤销后重新连接、「测试中」7 天过期、「正式版」授权页是否提示「未经验证的应用」、「结果未知」后重试。
 - macOS 上的实际运行（只在 Linux 上跑过；CI 的 macOS 任务会跑 Go 测试）。
 
 **后续**
