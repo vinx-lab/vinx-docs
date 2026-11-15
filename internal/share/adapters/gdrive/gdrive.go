@@ -27,7 +27,12 @@ var manifest []byte
 func init() { share.RegisterBuiltin(manifest, Run) }
 
 // Scopes 是申请的权限：drive.file 只能访问本应用自己创建的文件；email 用来显示是哪个账号。
-const Scopes = "https://www.googleapis.com/auth/drive.file email openid"
+const Scopes = driveScope + " email openid"
+
+const driveScope = "https://www.googleapis.com/auth/drive.file"
+
+// noDriveMessage 是授权时没勾选 Drive 权限的提示：Google 授权页上 Drive 是单独的勾选框，不勾也能「允许」。
+const noDriveMessage = "授权时没有勾选 Google 云端硬盘权限（「查看、修改、创建和删除您通过此应用使用的特定 Google 云端硬盘文件」）。请在后台重新连接，并在 Google 页面上勾选这一项"
 
 const folderMime = "application/vnd.google-apps.folder"
 
@@ -161,6 +166,11 @@ func authPoll(req *kit.Request, out *kit.Out) (map[string]any, error) {
 	}
 	if status != 200 || str(body, "access_token") == "" {
 		return nil, oauthError(status, body)
+	}
+	// Google 的分项授权：用户可以只允许登录信息、不勾选 Drive。这时令牌用不了，不保存，直接提示重新连接。
+	if scope := str(body, "scope"); scope != "" && !strings.Contains(scope, driveScope) {
+		kit.RemoveState(req.StateDir, authFile)
+		return nil, kit.Errorf("auth_denied", "%s", noDriveMessage)
 	}
 	tok := token{AccessToken: str(body, "access_token"), RefreshToken: str(body, "refresh_token"),
 		Expiry: time.Now().Unix() + int64(num(body, "expires_in")), Email: emailFromIDToken(str(body, "id_token"))}
@@ -306,6 +316,8 @@ func apiError(resp *http.Response) error {
 	switch {
 	case resp.StatusCode == 401:
 		return kit.Errorf("auth_required", "授权已失效，请在后台重新连接这个账号")
+	case resp.StatusCode == 403 && (reason == "insufficientPermissions" || strings.Contains(body.Error.Message, "insufficient authentication scopes")):
+		return kit.Errorf("auth_required", "%s", noDriveMessage)
 	case reason == "storageQuotaExceeded" || reason == "quotaExceeded":
 		return kit.Errorf("quota_exceeded", "%s", msg)
 	case reason == "rateLimitExceeded" || reason == "userRateLimitExceeded" || resp.StatusCode == 429:
@@ -470,6 +482,10 @@ func check(req *kit.Request, out *kit.Out) (map[string]any, error) {
 		return nil, err
 	}
 	dir := req.Target.Config["dir"]
+	// 目录为空时 ensureFolder 不请求 Drive；先调一次 about，确认令牌真的能用 Drive（例如授权时勾选了 Drive 权限）。
+	if err := c.jsonCall("GET", c.ep.api+"/drive/v3/about?fields=user", nil, nil); err != nil {
+		return nil, err
+	}
 	if _, err := c.ensureFolder(dir); err != nil {
 		return nil, err
 	}

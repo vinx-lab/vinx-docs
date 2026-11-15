@@ -257,3 +257,32 @@ func TestConformance(t *testing.T) {
 	}
 	t.Log(out.String())
 }
+
+// Google 的分项授权：用户点了「允许」但没勾选 Drive。新连接直接失败并说明；已经存下的这种令牌，
+// 保存目标时报「需要重新连接并勾选」而不是笼统的「没有权限」，账号标为需要重新连接。
+func TestDriveScopeNotGranted(t *testing.T) {
+	e := setup(t)
+	start, err := e.svc.ConnectAccount("google-drive", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.fake.ApproveWithoutDrive(start.UserCode, "carol@example.com")
+	poll, err := e.svc.PollAccount(start.Account)
+	if err != nil || poll.Status != "failed" || poll.Error.Code != "auth_denied" || !strings.Contains(poll.Error.Message, "勾选") {
+		t.Fatalf("没勾选 Drive 应失败并说明：%+v %v", poll, err)
+	}
+	if admin, _ := e.svc.Admin(); len(admin.Accounts) != 0 {
+		t.Fatalf("失败的新账号不应留下：%+v", admin.Accounts)
+	}
+
+	carol := e.connect(t, "carol@example.com")
+	e.fake.DropDriveScope()
+	_, _, err = e.svc.SaveTarget(share.TargetInput{Label: "c", Adapter: "google-drive", Account: carol, Sources: []string{"pages"}}, false)
+	if err == nil || !strings.Contains(err.Error(), "勾选") {
+		t.Fatalf("保存目标应提示重新连接并勾选 Drive：%v", err)
+	}
+	admin, _ := e.svc.Admin()
+	if len(admin.Accounts) != 1 || admin.Accounts[0].Status != share.AccountAuthRequired {
+		t.Fatalf("账号应标为需要重新连接：%+v", admin.Accounts)
+	}
+}

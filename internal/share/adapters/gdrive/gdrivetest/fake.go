@@ -31,7 +31,11 @@ type File struct {
 type device struct {
 	code, userCode, email string
 	approved, denied      bool
+	noDrive               bool // 授权页上没勾选 Drive 权限
 }
+
+const fullScope = "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email openid"
+const noDriveScope = "https://www.googleapis.com/auth/userinfo.email openid"
 
 // Server 是假服务。
 type Server struct {
@@ -43,6 +47,7 @@ type Server struct {
 	devices  map[string]*device // device_code → 授权
 	access   map[string]string  // access token → 邮箱
 	refresh  map[string]string  // refresh token → 邮箱
+	noDrive  map[string]bool    // 没有 Drive 权限的 access / refresh token
 	files    map[string]*File
 	sessions map[string]string // 上传会话 → 文件 id（新建时为空，见 pending）
 	pending  map[string]*File  // 上传会话 → 待创建的文件
@@ -50,7 +55,7 @@ type Server struct {
 
 // NewHandler 创建假服务但不监听（浏览器测试的独立进程自己监听）。
 func NewHandler() *Server {
-	return &Server{devices: map[string]*device{}, access: map[string]string{}, refresh: map[string]string{},
+	return &Server{devices: map[string]*device{}, access: map[string]string{}, refresh: map[string]string{}, noDrive: map[string]bool{},
 		files: map[string]*File{}, sessions: map[string]string{}, pending: map[string]*File{}}
 }
 
@@ -85,6 +90,31 @@ func (s *Server) Approve(userCode, email string) bool {
 		}
 	}
 	return false
+}
+
+// ApproveWithoutDrive 模拟用户允许了，但没有勾选 Drive 那一项（Google 的分项授权）。
+func (s *Server) ApproveWithoutDrive(userCode, email string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, d := range s.devices {
+		if d.userCode == userCode {
+			d.approved, d.email, d.noDrive = true, email, true
+			return true
+		}
+	}
+	return false
+}
+
+// DropDriveScope 让现有的所有令牌失去 Drive 权限（模拟早先没勾选就保存下来的令牌）。
+func (s *Server) DropDriveScope() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for token := range s.access {
+		s.noDrive[token] = true
+	}
+	for token := range s.refresh {
+		s.noDrive[token] = true
+	}
 }
 
 // Deny 模拟用户拒绝。
@@ -175,7 +205,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				delete(s.devices, d.code)
 				at, rt := s.next("at"), s.next("rt")
 				s.access[at], s.refresh[rt] = d.email, d.email
-				writeJSON(w, 200, map[string]any{"access_token": at, "refresh_token": rt, "expires_in": 3600, "id_token": idToken(d.email)})
+				scope := fullScope
+				if d.noDrive {
+					s.noDrive[at], s.noDrive[rt], scope = true, true, noDriveScope
+				}
+				writeJSON(w, 200, map[string]any{"access_token": at, "refresh_token": rt, "expires_in": 3600, "id_token": idToken(d.email), "scope": scope})
 			}
 		case "refresh_token":
 			email, ok := s.refresh[r.Form.Get("refresh_token")]
@@ -185,16 +219,25 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			at := s.next("at")
 			s.access[at] = email
-			writeJSON(w, 200, map[string]any{"access_token": at, "expires_in": 3600})
+			scope := fullScope
+			if s.noDrive[r.Form.Get("refresh_token")] {
+				s.noDrive[at], scope = true, noDriveScope
+			}
+			writeJSON(w, 200, map[string]any{"access_token": at, "expires_in": 3600, "scope": scope})
 		default:
 			writeJSON(w, 400, map[string]string{"error": "unsupported_grant_type"})
 		}
 	case path == "/device":
 		s.devicePage(w, r)
 	default:
-		email, ok := s.access[strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")]
+		bearer := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		email, ok := s.access[bearer]
 		if !ok && !strings.HasPrefix(path, "/upload/session/") {
 			driveError(w, 401, "authError")
+			return
+		}
+		if ok && s.noDrive[bearer] {
+			driveError(w, 403, "insufficientPermissions")
 			return
 		}
 		s.drive(w, r, email)
@@ -215,6 +258,7 @@ func (s *Server) devicePage(w http.ResponseWriter, r *http.Request) {
 					d.denied, message = true, "已拒绝"
 				} else {
 					d.approved, d.email, message = true, r.Form.Get("email"), "已允许，可以回到 Vinx Docs"
+					d.noDrive = r.Form.Get("drive") == ""
 				}
 			}
 		}
@@ -225,6 +269,7 @@ func (s *Server) devicePage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	fmt.Fprint(w, `<!doctype html><meta charset=utf-8><title>假 Google 授权</title>
 <form method=post><label>验证码 <input name=user_code></label><label>邮箱 <input name=email value="tester@example.com"></label>
+<label><input type=checkbox name=drive value=1 checked> 查看、修改、创建和删除您通过此应用使用的特定 Google 云端硬盘文件</label>
 <button name=action value=allow>允许</button><button name=action value=deny>拒绝</button></form>`)
 }
 
@@ -246,6 +291,8 @@ func (s *Server) drive(w http.ResponseWriter, r *http.Request, email string) {
 		return body
 	}
 	switch {
+	case path == "/drive/v3/about" && r.Method == "GET":
+		writeJSON(w, 200, map[string]any{"user": map[string]string{"emailAddress": email}})
 	case path == "/drive/v3/files" && r.Method == "GET":
 		q := r.URL.Query().Get("q")
 		var match func(f *File) bool
