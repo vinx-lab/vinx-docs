@@ -46,21 +46,4 @@ vinx-docs shares [--page <短码>] | unshare <记录ID> | shares forget <记录I
 
 ## 写一个新的适配器
 
-协议 v1（完整定义见 spec 0008 第 2 节）：
-
-- 每次调用启动一个进程。stdin 是一行 JSON 请求：`protocol`、`method`（`check` / `publish` / `revoke`，需要授权的再加 `auth.begin` / `auth.poll`）、幂等键 `key`、`target`、`provider`、`secrets`、`stateDir`、`params`。
-- 不含密钥的字段同时以环境变量提供：`VINX_SHARE_METHOD`、`VINX_SHARE_FILE`、`VINX_SHARE_NAME`、`VINX_SHARE_REMOTE_ID`、`VINX_SHARE_PUBLIC`、`VINX_SHARE_STATE_DIR`、`VINX_SHARE_CONFIG_<名字>` 等。
-- stdout 每行一个 JSON 事件：`log`、`progress`、`result`、`error`，最后恰好一个 `result` 或 `error`。其他工具的输出要转到 stderr（stderr 只进本机日志）。
-- `publish` 对同一个 `key` 必须幂等，并按请求里的 `public` 设置链接；`revoke` 对已经不存在的文件也要成功；令牌过期时自己刷新，刷新失败返回 `auth_required`。
-- 不认识的 `protocol` 或 `method` 返回 `{"event":"error","code":"unsupported",…}`。
-
-两种写法：
-
-- **内置 Go 适配器**（仓库收录的首选）：放在 `internal/share/adapters/<id>/`，`adapter.json` 写 `"builtin": true`，`init` 里调用 `share.RegisterBuiltin`，用 `internal/share/kit` 处理请求和事件，只用标准库。照着 [`internal/share/adapters/gdrive/`](../internal/share/adapters/gdrive/) 来，并附一个假服务端做离线测试。需要授权的服务实现 `auth.begin` / `auth.poll`（设备码流程），后台就能直接连接账号。
-- **外部适配器**（任何语言，只能在本机命令行登记）：一个可执行程序加 `adapter.json`。最小的例子是 [`internal/share/testdata/local-folder/`](../internal/share/testdata/local-folder/)（`sh` 脚本，把文件「发布」到本机目录）。
-
-  ```text
-  vinx-docs share-adapter conformance <目录>      # 离线一致性测试（test/conformance.json 给测试用的配置）
-  vinx-docs share-target add my-target --manifest <目录>/adapter.json --label "我的服务" --allow pages \
-    --config root=/tmp/out -- <目录>/adapter.sh
-  ```
+接入其他服务商（网盘、文档平台等）见 [适配器开发指南](share-adapter-guide.md)：协议、清单、内置 Go 适配器和外部适配器两种写法、测试方法、提交前的检查清单，以及接 Google Drive 时踩过的坑。

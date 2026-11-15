@@ -1,6 +1,6 @@
 # Google Drive 适配器
 
-内置在 vinx-docs 里，直接调用 Google Drive API，不需要安装其他程序。授权用 OAuth 设备码流程，在后台「外部发布」里完成，手机或电脑都可以。实现见 [spec 0008](../../../../docs/specs/0008-share-targets.md) 第 9 节；写新的适配器可以参照这个目录。
+内置在 vinx-docs 里，直接调用 Google Drive API，不需要安装其他程序。授权用 OAuth 设备码流程，在后台「外部发布」里完成，手机或电脑都可以。实现见 [spec 0008](../../../../docs/specs/0008-share-targets.md) 第 9 节；写新的适配器见 [适配器开发指南](../../../../docs/share-adapter-guide.md)，代码可以参照这个目录。
 
 ## 准备：创建 OAuth 客户端（一次，约 5 分钟）
 

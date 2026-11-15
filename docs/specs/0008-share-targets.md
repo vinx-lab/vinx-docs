@@ -357,6 +357,8 @@ vinx-docs share-provider set google-drive --config clientId=… --secret clientS
 
 ### 10. 贡献适配器的规范
 
+面向开发者的完整说明（含骨架代码、测试方法和检查清单）见 [适配器开发指南](../share-adapter-guide.md)。
+
 协议对实现语言没有要求。仓库收录官方适配器时有以下要求；用户自己在本机登记的外部适配器不受这些限制。
 
 **写法**：只收两种写法，避免用户还得另外安装运行时。
@@ -371,7 +373,7 @@ internal/share/adapters/<id>/
   adapter.json   # 清单（第 3 节）
   adapter.go     # 实现
   adapter_test.go
-  fake_test.go   # 假的服务端（httptest），离线测试用
+  <id>test/      # 假的服务端（httptest），离线测试用；只在 Go 测试里用时也可以写成 fake_test.go
   README.md
 ```
 

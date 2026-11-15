@@ -49,7 +49,7 @@
     });
     form.append(el('div', { class: 'auth-row' },
       el('button', { type: 'submit' }, '保存服务商设置'),
-      adapter.docs ? el('a', { href: adapter.docs, target: '_blank', rel: 'noopener' }, '怎么创建 OAuth 客户端') : null));
+      adapter.docs ? el('a', { href: adapter.docs, target: '_blank', rel: 'noopener' }, '设置说明') : null));
     form.addEventListener('submit', async event => {
       event.preventDefault();
       const config = {}, secrets = {};
