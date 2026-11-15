@@ -476,3 +476,58 @@ vinx-docs share-target add my-target --manifest <目录>/adapter.json --label "�
 - 加字段、加方法、加错误码都不算不兼容：适配器忽略不认识的字段，Vinx Docs 把不认识的错误码当作 `internal`。
 - 不兼容的改动才提升 `protocol`。适配器在清单的 `protocol` 里声明支持哪些版本。
 - 已经预留的扩展（spec 0008 第 11 节）：本机回调授权（`auth: "loopback"`）、多种输入形态（`params.kind` 和清单的 `inputs`）、进度条、一次发布到多个目标、配置字段升级成 JSON Schema。
+
+## 14. 用 agent 开发适配器
+
+仓库根目录的 `AGENTS.md`（Claude Code 通过 `CLAUDE.md` 引用它，Codex 直接读取）已经要求 agent 开发适配器时以本文为准。人和 agent 的分工：
+
+| 步骤 | 谁做 | 内容 |
+| --- | --- | --- |
+| 1. 准备 | 人 | 服务商的 API 文档链接、授权方式；如果要做真实账号测试，自己准备测试账号和凭据，**不交给 agent** |
+| 2. 方案 | agent 写，人确认 | 接口映射、幂等键存在哪、公开和撤回的实际效果、权限范围、错误码映射、清单字段、需要真实账号确认的点 |
+| 3. 实现 | agent | 适配器、假服务端、Go 测试和一致性测试、README，按第 11 节自检 |
+| 4. 真实账号测试 | 人（agent 可以陪着记录） | 按第 10.3 节的检查表，在自己的 Vinx Docs 后台填凭据、连接账号、发布 |
+| 5. 提交 | agent 整理，人提 PR | 把真实测试结果写进 README，CHANGELOG 加一行 |
+
+### 提示词模板
+
+把尖括号里的内容换掉，整段发给 agent：
+
+```text
+在 vinx-docs 仓库里，为 <服务商名称> 写一个内置的「发布到外部服务」适配器，id 用 <id>。
+
+先读：
+- AGENTS.md
+- docs/share-adapter-guide.md（适配器开发指南，按它做）
+- internal/share/adapters/gdrive/（参照实现）
+服务商资料：<API 文档链接>
+授权方式：<OAuth 设备码 / 应用密钥 / 账号密码 / …>
+
+第一步只写方案，不写代码。方案包括：
+1. check、publish、revoke（需要页面授权的再加 auth.begin、auth.poll）分别调用哪些接口；
+2. 幂等键 key 存在服务商的什么地方，怎么按 key 找回已发布的文件；
+3. 公开链接和非公开链接怎么设置；撤回后链接是否真的失效（注意回收站、缓存）；
+4. 授权需要哪些权限范围，用户能不能只授权一部分，拿到令牌后怎么检查；
+5. 服务商的错误怎么映射到协议的错误码；
+6. adapter.json 的 provider、providerSecrets、config、secrets 各有哪些字段；
+7. 已知限制，以及哪些点只能用真实账号确认。
+方案写完停下，等我确认后再实现。
+
+实现要求：
+- 只用 Go 标准库；不改主程序的发布流程和前端，只在 internal/cli/cli.go 加一行导入；
+- 带假服务端（httptest）和 Go 测试，包括 share.RunConformance 一致性测试，以及授权拒绝、令牌刷新、授权失效、权限不足、撤回公开链接这些错误路径；
+- go vet、gofmt、go test ./... 都通过；
+- README 写清楚准备步骤、每个字段的含义、公开 / 非公开 / 撤回的实际效果和已知限制，真实账号测试一节先写「未测」；
+- 最后按指南第 11 节的清单逐项自检，在汇报里列出每一项的结果和没做到的地方。
+
+不要做的事：不要向我索要或处理真实的客户端密钥、令牌；不要请求真实服务商的接口；真实账号测试由我来做。
+```
+
+写外部适配器时，把第一句换成「写一个外部适配器（`sh` 脚本 + <工具名>），放在 `share-adapters/<id>/`」，实现要求换成「带 `test/conformance.json` 和桩程序，`tests/share-adapters/run.sh share-adapters/<id>` 通过」。
+
+### 审 agent 的产出时重点看
+
+- 方案里「撤回后链接是否真的失效」「用户能不能只授权一部分」有没有答案，没有的话要求它查文档，查不到就列为真实账号测试项；
+- 测试有没有覆盖错误路径，而不只是正常发布；
+- README 的准备步骤能不能照着走通（自己走一遍最可靠）；
+- 有没有改到 `internal/share/adapters/<id>/` 和 `internal/cli/cli.go` 以外的代码，改了要说明理由。
