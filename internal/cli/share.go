@@ -698,8 +698,24 @@ func sharesRun(home string, args []string) error {
 		fmt.Fprintln(stdout, "没有发布记录")
 	}
 	statusText := map[string]string{share.StatusActive: "已发布", share.StatusPending: "进行中", share.StatusUnknown: "结果未知", share.StatusRevoked: "已撤回"}
+	// 已发布的记录和页面当前内容比对，改过的标「源文件已修改」（与页面上一致）。
+	registry, _ := pages.LoadRegistry(pages.DefaultRegistry(home))
+	digests := map[string]string{}
 	for _, r := range shown {
-		line := fmt.Sprintf("%s  %s → %s  %s  %s  %s", r.ID, r.Source.ID, r.Target, statusText[r.Status], r.Name, r.URL)
+		status := statusText[r.Status]
+		if r.Status == share.StatusActive && r.Digest != "" && registry != nil {
+			digest, ok := digests[r.Source.ID]
+			if !ok {
+				if record := pages.Find(registry, r.Source.ID); record != nil {
+					digest = pages.CurrentDigest(record)
+				}
+				digests[r.Source.ID] = digest
+			}
+			if digest != "" && digest != r.Digest {
+				status += " · 源文件已修改"
+			}
+		}
+		line := fmt.Sprintf("%s  %s → %s  %s  %s  %s", r.ID, r.Source.ID, r.Target, status, r.Name, r.URL)
 		if r.LastError != nil {
 			line += "  （" + r.LastError.Text + "）"
 		}

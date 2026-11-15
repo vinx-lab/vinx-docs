@@ -338,6 +338,13 @@ func (s *Server) drive(w http.ResponseWriter, r *http.Request, email string) {
 				f.Public = true
 			}
 			writeJSON(w, 200, map[string]string{"id": "anyoneWithLink"})
+		case sub == "permissions/anyoneWithLink" && r.Method == "DELETE":
+			if !f.Public {
+				driveError(w, 404, "notFound")
+				return
+			}
+			f.Public = false
+			w.WriteHeader(204)
 		case sub == "" && r.Method == "GET":
 			writeJSON(w, 200, s.view(f))
 		case sub == "" && r.Method == "PATCH":

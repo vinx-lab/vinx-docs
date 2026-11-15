@@ -286,3 +286,27 @@ func TestDriveScopeNotGranted(t *testing.T) {
 		t.Fatalf("账号应标为需要重新连接：%+v", admin.Accounts)
 	}
 }
+
+// 撤回公开链接：回收站里的文件公开链接仍然能打开（真实 Drive 实测），所以撤回要先取消公开权限，再移到回收站。
+func TestRevokePublicRemovesLink(t *testing.T) {
+	e := setup(t)
+	acct := e.connect(t, "dave@example.com")
+	id, _, err := e.svc.SaveTarget(share.TargetInput{Label: "公开", Adapter: "google-drive", Account: acct, Public: true, Sources: []string{"pages"}}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	job := e.publish(t, id)
+	if job.Status != "done" || !findFile(t, e.fake, job.Record.RemoteID).Public {
+		t.Fatalf("公开发布：%+v", job)
+	}
+	rj, err := e.svc.Revoke(job.Record.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if done := e.svc.Wait(rj.ID); done.Status != "done" {
+		t.Fatalf("撤回：%+v", done)
+	}
+	if f := findFile(t, e.fake, job.Record.RemoteID); f.Public || !f.Trashed {
+		t.Fatalf("撤回后应取消公开并移到回收站：%+v", f)
+	}
+}

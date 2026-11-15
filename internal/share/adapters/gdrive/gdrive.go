@@ -7,6 +7,7 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -567,10 +568,20 @@ func revoke(req *kit.Request, out *kit.Out) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if info == nil || info.Trashed {
+	if info == nil {
 		return map[string]any{"alreadyGone": true}, nil
 	}
-	// 移到回收站：链接失效，用户还能从回收站恢复。
+	// 先取消「知道链接的任何人」：回收站里的文件，公开链接仍然能打开和下载（实测），只移到回收站不够。
+	// 非公开的文件没有这个权限，返回 404，忽略。
+	err = c.jsonCall("DELETE", c.ep.api+"/drive/v3/files/"+url.PathEscape(info.ID)+"/permissions/anyoneWithLink", nil, nil)
+	var kerr *kit.Error
+	if err != nil && !(errors.As(err, &kerr) && kerr.Code == "not_found") {
+		return nil, err
+	}
+	if info.Trashed {
+		return map[string]any{"alreadyGone": true}, nil
+	}
+	// 再移到回收站：用户还能从回收站恢复（恢复后只有本人能看）。
 	if err := c.jsonCall("PATCH", c.ep.api+"/drive/v3/files/"+url.PathEscape(info.ID), map[string]bool{"trashed": true}, nil); err != nil {
 		return nil, err
 	}
